@@ -21,7 +21,5 @@ namespace ScalpingMO.Analysis.Analysis.API.Models.Users.Response
         public string Role { get; set; }
         public string PlanType { get; set; }
         public DateTime PlanExpiresAt { get; set; }
-
-
     }
 }

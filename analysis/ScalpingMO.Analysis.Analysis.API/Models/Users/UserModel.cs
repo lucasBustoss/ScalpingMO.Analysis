@@ -18,6 +18,9 @@ namespace ScalpingMO.Analysis.Analysis.API.Models.Users
             Role = "user";
             PlanType = 3;
             PlanExpiresAt = DateTime.UtcNow.AddDays(7);
+
+            CreatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         public string Username { get; set; }

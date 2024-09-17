@@ -21,19 +21,24 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
 
         public void SaveFixtures(List<Fixture> fixtures)
         {
-            List<Fixture> fixturesToSave = new List<Fixture>();
-
             foreach (Fixture fixture in fixtures)
             {
-                Fixture existentfixture = fixturesToSave.Where(m => m.Id == fixture.Id).FirstOrDefault();
-                Fixture existentfixtureInDb = _fixtureCollection.Find(m => m.Id == fixture.Id).FirstOrDefault();
+                var filter = Builders<Fixture>.Filter.Eq(f => f.Id, fixture.Id);
+                var existingFixture = _fixtureCollection.Find(filter).FirstOrDefault();
 
-                if (existentfixture == null && existentfixtureInDb == null)
-                    fixturesToSave.Add(fixture);
+                if (existingFixture == null)
+                    _fixtureCollection.InsertOne(fixture);
+                else
+                {
+                    // Se o fixture já existir, atualiza apenas as propriedades necessárias
+                    var update = Builders<Fixture>.Update
+                        .Set(f => f.HomeTeam.Goals, fixture.HomeTeam.Goals)
+                        .Set(f => f.AwayTeam.Goals, fixture.AwayTeam.Goals)
+                        .Set(f => f.Status, fixture.Status);
+
+                    _fixtureCollection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
+                }
             }
-
-            if (fixturesToSave.Count > 0)
-                _fixtureCollection.InsertMany(fixturesToSave);
 
             UpsertSync("fixture");
         }

@@ -33,7 +33,7 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Worker
 
             foreach (FixtureResponse fixture in fixtures)
             {
-                Fixture newFixture = new Fixture(fixture.Fixture, fixture.Teams.HomeTeam, fixture.Teams.AwayTeam);
+                Fixture newFixture = new Fixture(fixture.Fixture, fixture.Teams.HomeTeam, fixture.Teams.AwayTeam, fixture.Goals);
                 newFixtures.Add(newFixture);
             }
 

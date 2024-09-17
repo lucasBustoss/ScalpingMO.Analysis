@@ -25,11 +25,14 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Worker
             {
                 Fixture fixture = new Fixture(
                     footballApiFixture.Date, 
+                    footballApiFixture.Status,
                     footballApiFixture.Id, 
                     footballApiFixture.HomeTeam.Name, 
                     footballApiFixture.HomeTeam.Logo, 
+                    footballApiFixture.HomeTeam.Goals,
                     footballApiFixture.AwayTeam.Name, 
-                    footballApiFixture.AwayTeam.Logo);
+                    footballApiFixture.AwayTeam.Logo,
+                    footballApiFixture.AwayTeam.Goals);
 
                 #region Betfair
 

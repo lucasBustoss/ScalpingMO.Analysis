@@ -22,12 +22,23 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Data
 
         public void SaveFixtures(List<Fixture> fixtures)
         {
-            List<Fixture> fixturesToSave = new List<Fixture>();
-
             foreach (Fixture fixture in fixtures)
             {
-                var filter = Builders<Fixture>.Filter.Eq(m => m.Id, fixture.Id);
-                _fixturesCollection.ReplaceOne(filter, fixture, new ReplaceOptions { IsUpsert = true });
+                var filter = Builders<Fixture>.Filter.Eq(f => f.FootballApiId, fixture.FootballApiId);
+                var existingFixture = _fixturesCollection.Find(filter).FirstOrDefault();
+
+                if (existingFixture == null)
+                    _fixturesCollection.InsertOne(fixture);
+                else
+                {
+                    // Se o fixture já existir, atualiza apenas as propriedades necessárias
+                    var update = Builders<Fixture>.Update
+                        .Set(f => f.HomeTeamGoals, fixture.HomeTeamGoals)
+                        .Set(f => f.AwayTeamGoals, fixture.AwayTeamGoals)
+                        .Set(f => f.Status, fixture.Status);
+
+                    _fixturesCollection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
+                }
             }
         }
 

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Analysis.Extract.FixtureData": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

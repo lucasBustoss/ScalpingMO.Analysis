@@ -12,5 +12,7 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Models.Response
         [JsonPropertyName("teams")]
         public FixtureTeamResponse Teams { get; set; }
 
+        [JsonPropertyName("goals")]
+        public FixtureGoalsDataResponse Goals { get; set; }
     }
 }

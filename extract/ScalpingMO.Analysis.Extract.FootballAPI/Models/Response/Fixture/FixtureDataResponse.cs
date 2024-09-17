@@ -15,5 +15,9 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Models.Response.Fixture
         [JsonPropertyName("timestamp")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public long Timestamp { get; set; }
+
+        [JsonPropertyName("status")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public FixtureStatusDataResponse Status { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI
             BetfairConfiguration betfairConfig = new BetfairConfiguration(username, password, apiKey, secretTwoFactor);
 
             DataWorker worker = new DataWorker(betfairConfig);
+
             worker.Execute();
         }
     }
