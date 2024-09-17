@@ -1,4 +1,5 @@
 ﻿using ScalpingMO.Analysis.Extract.FootballAPI.Data;
+using ScalpingMO.Analysis.Extract.FootballAPI.Models;
 using ScalpingMO.Analysis.Extract.FootballAPI.Models.Fixture;
 using ScalpingMO.Analysis.Extract.FootballAPI.Models.Response;
 
@@ -17,11 +18,20 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Worker
 
         public void Execute()
         {
-            for (int i = 0; i < 7; i++)
+            Sync sync = _mongoDB.GetSyncData();
+
+            if (sync.DateTime.AddHours(1) < DateTime.Now)
             {
-                string date = DateTime.Now.AddDays(i).ToString("yyyy-MM-dd");
-                List<FixtureResponse> fixtures = _api.GetFixtures(date).GetAwaiter().GetResult();
-                TreatAndSaveFixtures(fixtures, date);
+                Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados do FootballAPI");
+
+                for (int i = 0; i < 7; i++)
+                {
+                    string date = DateTime.Now.AddDays(i).ToString("yyyy-MM-dd");
+                    List<FixtureResponse> fixtures = _api.GetFixtures(date).GetAwaiter().GetResult();
+                    TreatAndSaveFixtures(fixtures, date);
+                }
+
+                Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados do FootballAPI");
             }
         }
 

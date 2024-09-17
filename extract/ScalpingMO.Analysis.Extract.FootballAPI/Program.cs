@@ -17,7 +17,13 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI
             string apiHost = config["FootballAPI:ApiHost"];
 
             DataWorker worker = new DataWorker(url, apiKey, apiHost);
-            worker.Execute();
+
+            while (true)
+            {
+                worker.Execute();
+
+                Thread.Sleep(60000);
+            }
         }
     }
 }

@@ -49,6 +49,12 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
             return rate;
         }
 
+        public Sync GetSyncData()
+        {
+            Sync sync = _syncCollection.Find(Builders<Sync>.Filter.Empty).FirstOrDefault();
+            return sync;
+        }
+
         public void UpdateRateLimit(RateLimit rateLimit)
         {
             var update = Builders<RateLimit>.Update

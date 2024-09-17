@@ -22,7 +22,13 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI
 
             DataWorker worker = new DataWorker(betfairConfig);
 
-            worker.Execute();
+            while (true)
+            {
+                Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados da Betfair");
+                worker.Execute();
+                Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados da Betfair");
+                Thread.Sleep(20000);
+            }
         }
     }
 }

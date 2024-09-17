@@ -15,7 +15,15 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill
             string url = config["WilliamHill:Url"];
 
             DataWorker worker = new DataWorker(url);
-            worker.Execute();
+
+            while (true)
+            {
+                Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados da William Hill");
+                worker.Execute();
+                Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados da William Hill");
+
+                Thread.Sleep(30000);
+            }
         }
     }
 }
