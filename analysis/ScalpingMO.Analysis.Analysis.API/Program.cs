@@ -1,4 +1,8 @@
 
+using ScalpingMO.Analysis.Analysis.API.Config;
+using ScalpingMO.Analysis.Analysis.API.Repositories.Login;
+using ScalpingMO.Analysis.Analysis.API.Repositories.Users;
+
 namespace ScalpingMO.Analysis.Analysis.API
 {
     public class Program
@@ -6,26 +10,24 @@ namespace ScalpingMO.Analysis.Analysis.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            
+            builder.Services.AddApiConfiguration();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddJwtConfig(builder.Configuration);
+
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+            builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
 
-            app.UseAuthorization();
-
-
+            app.UseApiConfiguration(app.Environment);
             app.MapControllers();
 
             app.Run();

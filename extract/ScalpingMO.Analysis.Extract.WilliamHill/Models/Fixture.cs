@@ -14,7 +14,7 @@
             AwayTeam = awayTeam;
             
             DateTime parsedHour = DateTime.ParseExact(hour, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
-            Date = date.Date.Add(parsedHour.TimeOfDay).AddHours(3);
+            Date = date.Date.Add(parsedHour.TimeOfDay);
 
             RadarUrl = $"https://sports.whcdn.net/scoreboards/app/football/index.html?eventId={id}";
         }

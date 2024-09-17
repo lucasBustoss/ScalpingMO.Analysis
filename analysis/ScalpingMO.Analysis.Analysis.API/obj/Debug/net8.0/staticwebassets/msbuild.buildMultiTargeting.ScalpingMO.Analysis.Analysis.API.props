@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\ScalpingMO.Analysis.Analysis.API.props" />
+</Project>
