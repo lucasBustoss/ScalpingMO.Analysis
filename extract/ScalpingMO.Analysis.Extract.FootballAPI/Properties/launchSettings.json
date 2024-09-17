@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Analysis.Extract.FootballAPI": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

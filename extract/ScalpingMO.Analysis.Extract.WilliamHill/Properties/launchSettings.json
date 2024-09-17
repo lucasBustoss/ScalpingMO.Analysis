@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Extract.WilliamHill": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

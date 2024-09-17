@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Analysis.Analysis.ConsolidateData": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

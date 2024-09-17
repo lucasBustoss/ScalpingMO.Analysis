@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Analysis.Extract.BetfairAPI": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
