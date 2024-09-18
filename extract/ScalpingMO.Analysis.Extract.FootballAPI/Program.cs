@@ -26,11 +26,10 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI
 
             while (true)
             {
-                int minute = 60000;
                 Console.WriteLine("Checando se é possivel realizar um novo sync do FootballAPI");
                 worker.Execute();
 
-                Thread.Sleep(minute * 5);
+                Thread.Sleep(30000);
             }
         }
     }

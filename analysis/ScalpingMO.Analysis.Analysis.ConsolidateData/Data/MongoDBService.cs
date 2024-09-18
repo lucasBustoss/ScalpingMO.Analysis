@@ -10,14 +10,17 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Data
         private readonly IMongoCollection<BetfairFixture> _betfairFixtureCollection;
         private readonly IMongoCollection<WilliamHillFixture> _williamHillFixtureCollection;
 
-        public MongoDBService(string connectionString, string databaseName)
+        public MongoDBService(string connectionString, string analysisDatabaseName, string extractDatabaseName)
         {
             var client = new MongoClient(connectionString);
-            var database = client.GetDatabase(databaseName);
-            _fixturesCollection = database.GetCollection<Fixture>("fixtures");
-            _footballApiFixtureCollection = database.GetCollection<FootballApiFixture>("footballapi_fixtures");
-            _betfairFixtureCollection = database.GetCollection<BetfairFixture>("betfair_fixtures");
-            _williamHillFixtureCollection = database.GetCollection<WilliamHillFixture>("williamhill_fixtures");
+
+            var analysisDatabase = client.GetDatabase(analysisDatabaseName);
+            _fixturesCollection = analysisDatabase.GetCollection<Fixture>("fixtures");
+            
+            var extractDatabase = client.GetDatabase(extractDatabaseName);
+            _footballApiFixtureCollection = extractDatabase.GetCollection<FootballApiFixture>("footballapi_fixtures");
+            _betfairFixtureCollection = extractDatabase.GetCollection<BetfairFixture>("betfair_fixtures");
+            _williamHillFixtureCollection = extractDatabase.GetCollection<WilliamHillFixture>("williamhill_fixtures");
         }
 
         public void SaveFixtures(List<Fixture> fixtures)
@@ -35,7 +38,11 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Data
                     var update = Builders<Fixture>.Update
                         .Set(f => f.HomeTeamGoals, fixture.HomeTeamGoals)
                         .Set(f => f.AwayTeamGoals, fixture.AwayTeamGoals)
-                        .Set(f => f.Status, fixture.Status);
+                        .Set(f => f.Status, fixture.Status)
+                        .Set(f => f.BetfairId, fixture.BetfairId)
+                        .Set(f => f.MarketId, fixture.MarketId)
+                        .Set(f => f.WilliamHillId, fixture.WilliamHillId)
+                        .Set(f => f.RadarUrl, fixture.RadarUrl);
 
                     _fixturesCollection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
                 }

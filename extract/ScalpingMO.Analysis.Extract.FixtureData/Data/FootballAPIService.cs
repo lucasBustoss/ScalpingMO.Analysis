@@ -1,50 +1,41 @@
-﻿using ScalpingMO.Analysis.Extract.FootballAPI.Models;
-using ScalpingMO.Analysis.Extract.FootballAPI.Models.Response;
+﻿using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response;
+using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response.Odds;
 using System.Text.Json;
 
-namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
+namespace ScalpingMO.Analysis.Extract.FixtureData.Data
 {
-    public class ApiService
+    public class FootballAPIService
     {
+        private MongoDBService _mongoDB;
         private readonly HttpClient _httpClient;
-        private readonly MongoDBService _mongoDB;
 
-        public ApiService(string url, string apiKey, string apiHost, string connectionString, string databaseName)
+        public FootballAPIService(MongoDBService mongoDB, string url, string apiKey, string apiHost)
         {
-            _mongoDB = new MongoDBService(connectionString, databaseName);
+            _mongoDB = mongoDB;
 
             _httpClient = new HttpClient() { BaseAddress = new Uri(url) };
             _httpClient.DefaultRequestHeaders.Add("X-RapidApi-Key", apiKey);
             _httpClient.DefaultRequestHeaders.Add("X-RapidApi-Host", apiHost);
         }
 
-        public async Task<List<FixtureResponse>> GetFixtures(string date)
+        public async Task GetLiveOdds()
         {
             if (!CheckRateLimit())
             {
                 Console.WriteLine("FootballAPI rate exceeded");
-                return null;
+                return;
             }
 
-            HttpResponseMessage request = await _httpClient.GetAsync($"fixtures?date={date}");
+            HttpResponseMessage request = await _httpClient.GetAsync($"odds/live?bet=59");
 
             if (request.IsSuccessStatusCode)
             {
                 UpdateRateLimit(request);
 
                 string response = await request.Content.ReadAsStringAsync();
-                ApiBaseResponse<FixtureResponse> responseData = JsonSerializer.Deserialize<ApiBaseResponse<FixtureResponse>>(response);
-
-                if (responseData == null)
-                    return null;
-
-                return responseData.Response.ToList();
+                _mongoDB.SaveOddResponseRaw(response);
             }
-
-            return null;
         }
-
-        #region Private methods
 
         private void UpdateRateLimit(HttpResponseMessage request)
         {
@@ -74,7 +65,5 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
 
             return isResetTimePassed || hasRemainingRequests;
         }
-
-        #endregion
     }
 }

@@ -19,13 +19,23 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
                 .Build();
 
             string connectionString = config["MongoDB:ConnectionString"];
-            string databaseName = config["MongoDB:DatabaseName"];
+            string analysisDatabaseName = config["MongoDB:AnalysisDatabaseName"];
+            string extractDatabaseName = config["MongoDB:ExtractDatabaseName"];
 
-            MongoDBService mongoDb = new MongoDBService(connectionString, databaseName);
-            HashSet<string> processedFixtures = new HashSet<string>(); 
+            string footballApiUrl = config["FootballAPI:Url"];
+            string footballApiKey = config["FootballAPI:ApiKey"];
+            string footballApiHost = config["FootballAPI:ApiHost"];
+
+            MongoDBService mongoDb = new MongoDBService(connectionString, analysisDatabaseName, extractDatabaseName);
+            FootballAPIService footballApiService = new FootballAPIService(mongoDb, footballApiUrl, footballApiKey, footballApiHost);
+            HashSet<string> processedFixtures = new HashSet<string>();
 
             while (true)
             {
+                Console.WriteLine($"{DateTime.UtcNow} - Consultando dados de odds de referência");
+                await footballApiService.GetLiveOdds();
+                Console.WriteLine($"{DateTime.UtcNow} - Fim da consulta de dados de odds de referência");
+
                 List<Fixture> fixtures = mongoDb.GetFixturesToExtractData();
                 List<Task> tasks = new List<Task>();
 
@@ -33,17 +43,16 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
                 {
                     if (!processedFixtures.Contains(fixture.Id.ToString()))
                     {
-                        tasks.Add(Task.Run(() =>
+                        // Dispara a execução do worker sem aguardar a conclusão
+                        _ = Task.Run(async () =>
                         {
                             DataWorker worker = new DataWorker(mongoDb);
-                            worker.Execute(fixture);
-                        }));
+                            await worker.Execute(fixture);
+                        });
 
                         processedFixtures.Add(fixture.Id.ToString());
                     }
                 }
-
-                await Task.WhenAll(tasks);
 
                 await Task.Delay(30000);
             }

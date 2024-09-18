@@ -18,9 +18,10 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData
                 .Build();
 
             string connectionString = config["MongoDB:ConnectionString"];
-            string databaseName = config["MongoDB:DatabaseName"];
+            string analysisDatabaseName = config["MongoDB:AnalysisDatabaseName"];
+            string extractDatabaseName = config["MongoDB:ExtractDatabaseName"];
 
-            DataWorker worker = new DataWorker(connectionString, databaseName);
+            DataWorker worker = new DataWorker(connectionString, analysisDatabaseName, extractDatabaseName);
 
             while (true)
             {

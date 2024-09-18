@@ -20,7 +20,7 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Worker
         {
             Sync sync = _mongoDB.GetSyncData();
 
-            if (sync == null || sync.DateTime.AddHours(1) < DateTime.Now)
+            if (sync == null || sync.DateTime.AddSeconds(30) < DateTime.Now)
             {
                 Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados do FootballAPI");
 

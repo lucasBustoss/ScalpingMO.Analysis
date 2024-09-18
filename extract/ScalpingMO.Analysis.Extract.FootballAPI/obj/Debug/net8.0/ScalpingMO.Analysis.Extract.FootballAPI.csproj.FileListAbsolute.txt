@@ -38,8 +38,9 @@ C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\ScalpingMO.Analysis.Extrac
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.pdb
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.genruntimeconfig.cache
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ref\ScalpingMO.Analysis.Extract.FootballAPI.dll
-C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.exe
+C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\appsettings.Docker.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\appsettings.json
+C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.exe
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.deps.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.runtimeconfig.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.dll
@@ -79,4 +80,3 @@ C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysi
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.pdb
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.FootballAPI.genruntimeconfig.cache
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\obj\Debug\net8.0\ref\ScalpingMO.Analysis.Extract.FootballAPI.dll
-C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.FootballAPI\bin\Debug\net8.0\appsettings.Docker.json

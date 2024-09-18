@@ -1,9 +1,6 @@
-﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
-using MongoDB.Bson.Serialization.IdGenerators;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using ScalpingMO.Analysis.Extract.WilliamHill.Models;
-using System;
 using System.Globalization;
 
 namespace ScalpingMO.Analysis.Extract.WilliamHill.Data

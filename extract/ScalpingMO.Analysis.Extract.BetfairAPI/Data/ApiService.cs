@@ -9,7 +9,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 {
     public class ApiService
     {
-        private string _token = "k1vVDNDd/Fp86PWXeW9djTGmtPAH8mkbhokpRGFjfXA=";
+        private string _token = "U6CyhuH4jMKG65Q5sUjijoxTT67IZKOlXhdEvjdzReo=";
         private BetfairConfiguration _configuration;
         private HttpClient _betfairClient;
         private HttpClient _authClient;
