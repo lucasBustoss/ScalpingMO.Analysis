@@ -13,9 +13,11 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         /// </summary>
         private int _tries = 0;
 
-        public DataWorker()
+
+
+        public DataWorker(MongoDBService mongoDB)
         {
-            _mongoDB = new MongoDBService();
+            _mongoDB = mongoDB;
         }
 
         public void Execute(Fixture fixture)

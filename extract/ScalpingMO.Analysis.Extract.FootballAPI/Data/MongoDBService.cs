@@ -10,10 +10,10 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
         private readonly IMongoCollection<RateLimit> _rateCollection;
         private readonly IMongoCollection<Fixture> _fixtureCollection;
 
-        public MongoDBService()
+        public MongoDBService(string connectionString, string databaseName)
         {
-            var client = new MongoClient("mongodb://scalping:scalping_mo@localhost:27017/admin");
-            var database = client.GetDatabase("scalping");
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
             _syncCollection = database.GetCollection<Sync>("footballapi_sync");
             _rateCollection = database.GetCollection<RateLimit>("footballapi_rate");
             _fixtureCollection = database.GetCollection<Fixture>("footballapi_fixtures");

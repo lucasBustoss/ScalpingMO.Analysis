@@ -7,10 +7,10 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Data
     {
         private readonly IMongoCollection<Fixture> _fixtureCollection;
 
-        public MongoDBService()
+        public MongoDBService(string connectionString, string databaseName)
         {
-            var client = new MongoClient("mongodb://scalping:scalping_mo@localhost:27017/admin");
-            var database = client.GetDatabase("scalping");
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
             _fixtureCollection = database.GetCollection<Fixture>("williamhill_fixtures");
         }
 

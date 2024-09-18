@@ -8,10 +8,10 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Worker
         private ScrapperService _scrapper;
         private MongoDBService _mongoDB;
 
-        public DataWorker(string url)
+        public DataWorker(string url, string connectionString, string databaseName)
         {
             _scrapper = new ScrapperService(url);
-            _mongoDB = new MongoDBService();
+            _mongoDB = new MongoDBService(connectionString, databaseName);
         }
 
         public void Execute()

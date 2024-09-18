@@ -10,17 +10,17 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Worker
         private ApiService _api;
         private readonly MongoDBService _mongoDB;
 
-        public DataWorker(string url, string apiKey, string apiHost)
+        public DataWorker(string url, string apiKey, string apiHost, string connectionString, string databaseName)
         {
-            _api = new ApiService(url, apiKey, apiHost);
-            _mongoDB = new MongoDBService();
+            _api = new ApiService(url, apiKey, apiHost, connectionString, databaseName);
+            _mongoDB = new MongoDBService(connectionString, databaseName);
         }
 
         public void Execute()
         {
             Sync sync = _mongoDB.GetSyncData();
 
-            if (sync.DateTime.AddHours(1) < DateTime.Now)
+            if (sync == null || sync.DateTime.AddHours(1) < DateTime.Now)
             {
                 Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados do FootballAPI");
 
@@ -32,7 +32,9 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Worker
                 }
 
                 Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados do FootballAPI");
-            }
+            } 
+            else
+                Console.WriteLine("Ainda não é possivel realizar o sync");
         }
 
         #region Private methods

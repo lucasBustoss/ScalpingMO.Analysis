@@ -10,10 +10,12 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ScalpingMO.Analysis.Analysis.ConsolidateData/ScalpingMO.Analysis.Analysis.ConsolidateData.csproj", "ScalpingMO.Analysis.Analysis.ConsolidateData/"]
-RUN dotnet restore "./ScalpingMO.Analysis.Analysis.ConsolidateData/ScalpingMO.Analysis.Analysis.ConsolidateData.csproj"
+# Copiar o appsettings.Docker.json manualmente, se necessário
+COPY ["analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/appsettings.Docker.json", "analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/"]
+COPY ["analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/ScalpingMO.Analysis.Analysis.ConsolidateData.csproj", "analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/"]
+RUN dotnet restore "./analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/ScalpingMO.Analysis.Analysis.ConsolidateData.csproj"
 COPY . .
-WORKDIR "/src/ScalpingMO.Analysis.Analysis.ConsolidateData"
+WORKDIR "/src/analysis/ScalpingMO.Analysis.Analysis.ConsolidateData"
 RUN dotnet build "./ScalpingMO.Analysis.Analysis.ConsolidateData.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

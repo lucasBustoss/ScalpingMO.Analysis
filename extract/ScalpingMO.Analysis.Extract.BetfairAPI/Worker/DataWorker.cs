@@ -8,10 +8,10 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Worker
         private ApiService _api;
         private readonly MongoDBService _mongoDB;
 
-        public DataWorker(BetfairConfiguration configuration)
+        public DataWorker(BetfairConfiguration configuration, string connectionString, string databaseName)
         {
             _api = new ApiService(configuration);
-            _mongoDB = new MongoDBService();
+            _mongoDB = new MongoDBService(connectionString, databaseName);
         }
 
         public void Execute()

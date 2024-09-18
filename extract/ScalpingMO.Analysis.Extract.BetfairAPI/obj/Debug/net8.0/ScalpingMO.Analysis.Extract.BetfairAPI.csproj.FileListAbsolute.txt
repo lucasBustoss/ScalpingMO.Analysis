@@ -1,4 +1,6 @@
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.exe
+C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\appsettings.Docker.json
+C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\appsettings.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.deps.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.runtimeconfig.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.dll
@@ -32,10 +34,10 @@ C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysi
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.AssemblyInfoInputs.cache
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.AssemblyInfo.cs
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.csproj.CoreCompileInputs.cache
+C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.sourcelink.json
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\Scalping.4D8213C0.Up2Date
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.dll
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\refint\ScalpingMO.Analysis.Extract.BetfairAPI.dll
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.pdb
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ScalpingMO.Analysis.Extract.BetfairAPI.genruntimeconfig.cache
 C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\obj\Debug\net8.0\ref\ScalpingMO.Analysis.Extract.BetfairAPI.dll
-C:\Users\bob_l\Documents\Projetos\ScalpingMO.Analysis\extract\ScalpingMO.Analysis.Extract.BetfairAPI\bin\Debug\net8.0\appsettings.json

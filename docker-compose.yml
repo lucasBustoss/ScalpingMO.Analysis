@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  scalpingmo_extract_betfair:
+    build:
+      context: .
+      dockerfile: extract/ScalpingMO.Analysis.Extract.BetfairAPI/Dockerfile
+    image: scalpingmo.extract.betfair:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
+  scalpingmo_extract_williamhill:
+    build:
+      context: .
+      dockerfile: extract/ScalpingMO.Analysis.Extract.WilliamHill/Dockerfile
+    image: scalpingmo.extract.williamhill:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
+  scalpingmo_extract_footballapi:
+    build:
+      context: .
+      dockerfile: extract/ScalpingMO.Analysis.Extract.FootballAPI/Dockerfile
+    image: scalpingmo.extract.footballapi:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
+  scalpingmo_extract_fixturedata:
+    build:
+      context: .
+      dockerfile: extract/ScalpingMO.Analysis.Extract.FixtureData/Dockerfile
+    image: scalpingmo.extract.fixturedata:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
+  scalpingmo_analysis_consolidatedata:
+    build:
+      context: .
+      dockerfile: analysis/ScalpingMO.Analysis.Analysis.ConsolidateData/Dockerfile
+    image: scalpingmo.extract.consolidatedata:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
+  scalpingmo_db:
+    image: mongo:latest
+    container_name: scalpingmo_db
+    networks:
+      - scalpingmo-network
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: scalping
+      MONGO_INITDB_ROOT_PASSWORD: scalping_mo
+    volumes:
+      - ./mongo_data:/data/db
+    command: --auth
+       
+networks:
+  scalpingmo-network:
+    driver: bridge

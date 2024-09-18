@@ -7,3 +7,4 @@
 **/obj/Debug
 *.pdb
 *.cache
+**/mongo_data

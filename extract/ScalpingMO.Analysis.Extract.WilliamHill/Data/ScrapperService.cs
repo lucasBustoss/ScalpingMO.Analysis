@@ -16,8 +16,15 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Data
         public ScrapperService(string url)
         {
             _url = url;
-            
-            _driver = new ChromeDriver();
+
+            var chromeOptions = new ChromeOptions();
+            chromeOptions.AddArgument("--headless");  // Para rodar no Docker sem interface gráfica
+            chromeOptions.AddArgument("--no-sandbox");  // Recomendado para Docker
+            chromeOptions.AddArgument("--disable-dev-shm-usage");  // Evita problemas com espaço limitado
+
+            chromeOptions.BinaryLocation = Environment.GetEnvironmentVariable("CHROME_BIN");
+
+            _driver = new ChromeDriver(chromeOptions);
             _driver.Navigate().GoToUrl(_url);
             Thread.Sleep(2000);
         }

@@ -1,15 +1,25 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# Base image with .NET runtime
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-USER app
 WORKDIR /app
 
+# Install dependencies for Chrome/Chromium and ChromeDriver
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
+    libnss3-dev \
+    libxss1 \
+    libappindicator1 \
+    fonts-liberation \
+    libappindicator3-1 \
+    xdg-utils \
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+# Copiar o appsettings.Docker.json manualmente, se necessário
+COPY ["extract/ScalpingMO.Analysis.Extract.FixtureData/appsettings.Docker.json", "extract/ScalpingMO.Analysis.Extract.FixtureData/"]
 COPY ["extract/ScalpingMO.Analysis.Extract.FixtureData/ScalpingMO.Analysis.Extract.FixtureData.csproj", "extract/ScalpingMO.Analysis.Extract.FixtureData/"]
 RUN dotnet restore "./extract/ScalpingMO.Analysis.Extract.FixtureData/ScalpingMO.Analysis.Extract.FixtureData.csproj"
 COPY . .

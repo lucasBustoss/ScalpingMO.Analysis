@@ -10,10 +10,10 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Data
         private readonly IMongoCollection<BetfairFixture> _betfairFixtureCollection;
         private readonly IMongoCollection<WilliamHillFixture> _williamHillFixtureCollection;
 
-        public MongoDBService()
+        public MongoDBService(string connectionString, string databaseName)
         {
-            var client = new MongoClient("mongodb://scalping:scalping_mo@localhost:27017/admin");
-            var database = client.GetDatabase("scalping");
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
             _fixturesCollection = database.GetCollection<Fixture>("fixtures");
             _footballApiFixtureCollection = database.GetCollection<FootballApiFixture>("footballapi_fixtures");
             _betfairFixtureCollection = database.GetCollection<BetfairFixture>("betfair_fixtures");

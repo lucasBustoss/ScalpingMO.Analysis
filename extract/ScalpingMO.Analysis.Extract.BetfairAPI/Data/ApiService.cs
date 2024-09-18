@@ -9,7 +9,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 {
     public class ApiService
     {
-        private string _token = "4q6KDGP+v2V9HxGjyx5ZJNifjwDLI3Bdywbg9vb14aM=";
+        private string _token = "k1vVDNDd/Fp86PWXeW9djTGmtPAH8mkbhokpRGFjfXA=";
         private BetfairConfiguration _configuration;
         private HttpClient _betfairClient;
         private HttpClient _authClient;
@@ -194,6 +194,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 
             if (error.Code == "ANGX-0003")
             {
+                Console.WriteLine("Sessão inválida. Fazendo login e tentando novamente.");
                 await Login();
                 return await method();
             }

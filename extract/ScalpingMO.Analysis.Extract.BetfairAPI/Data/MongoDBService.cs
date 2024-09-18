@@ -1,19 +1,18 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
 using ScalpingMO.Analysis.Extract.BetfairAPI.Models;
 
 namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 {
     public class MongoDBService
     {
-        private readonly IMongoCollection<Sync> _syncCollection;
         private readonly IMongoCollection<Fixture> _fixtureCollection;
 
-
-        public MongoDBService()
+        public MongoDBService(string connectionString, string databaseName)
         {
-            var client = new MongoClient("mongodb://scalping:scalping_mo@localhost:27017/admin");
-            var database = client.GetDatabase("scalping");
-            _syncCollection = database.GetCollection<Sync>("betfair_sync");
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
+
             _fixtureCollection = database.GetCollection<Fixture>("betfair_fixtures");
         }
 
@@ -32,20 +31,6 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 
             if (fixturesToSave.Count > 0)
                 _fixtureCollection.InsertMany(fixturesToSave);
-
-            UpsertSync();
         }
-
-        #region Private methods
-
-        private void UpsertSync()
-        {
-            var update = Builders<Sync>.Update
-                .Set(m => m.DateTime, DateTime.Now);
-
-            _syncCollection.UpdateOne(Builders<Sync>.Filter.Empty, update, new UpdateOptions { IsUpsert = true });
-        }
-
-        #endregion
     }
 }

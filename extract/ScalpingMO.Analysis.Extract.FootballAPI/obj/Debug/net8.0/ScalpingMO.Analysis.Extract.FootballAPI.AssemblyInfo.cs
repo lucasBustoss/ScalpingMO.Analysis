@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ScalpingMO.Analysis.Extract.FootballAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc7315ea6c1b7fb25ca0c3c66852760559bc570c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+764a86f36c08f3eb91ffbcd343c11fcb2771349a")]
 [assembly: System.Reflection.AssemblyProductAttribute("ScalpingMO.Analysis.Extract.FootballAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ScalpingMO.Analysis.Extract.FootballAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

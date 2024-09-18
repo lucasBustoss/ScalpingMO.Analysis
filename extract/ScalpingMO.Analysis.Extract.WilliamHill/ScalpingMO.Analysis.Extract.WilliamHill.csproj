@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="appsettings.Docker.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -10,10 +10,12 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ScalpingMO.Analysis.Extract.FootballAPI/ScalpingMO.Analysis.Extract.FootballAPI.csproj", "ScalpingMO.Analysis.Extract.FootballAPI/"]
-RUN dotnet restore "./ScalpingMO.Analysis.Extract.FootballAPI/ScalpingMO.Analysis.Extract.FootballAPI.csproj"
+# Copiar o appsettings.Docker.json manualmente, se necessário
+COPY ["extract/ScalpingMO.Analysis.Extract.FootballAPI/appsettings.Docker.json", "extract/ScalpingMO.Analysis.Extract.FootballAPI/"]
+COPY ["extract/ScalpingMO.Analysis.Extract.FootballAPI/ScalpingMO.Analysis.Extract.FootballAPI.csproj", "extract/ScalpingMO.Analysis.Extract.FootballAPI/"]
+RUN dotnet restore "./extract/ScalpingMO.Analysis.Extract.FootballAPI/ScalpingMO.Analysis.Extract.FootballAPI.csproj"
 COPY . .
-WORKDIR "/src/ScalpingMO.Analysis.Extract.FootballAPI"
+WORKDIR "/src/extract/ScalpingMO.Analysis.Extract.FootballAPI"
 RUN dotnet build "./ScalpingMO.Analysis.Extract.FootballAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

@@ -8,26 +8,35 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI
     {
         static void Main(string[] args)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             var config = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())  // Diretório base onde o appsettings está
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)  // Carrega o appsettings.json
-               .Build();
+                .SetBasePath(AppContext.BaseDirectory) // Garante que o caminho seja correto no Docker
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+                .Build();
 
             string username = config["Betfair:Username"];
             string password = config["Betfair:Password"];
             string apiKey = config["Betfair:ApiKey"];
             string secretTwoFactor = config["Betfair:SecretTwoFactorCode"];
 
+            string connectionString = config["MongoDB:ConnectionString"];
+            string databaseName = config["MongoDB:DatabaseName"];
+
             BetfairConfiguration betfairConfig = new BetfairConfiguration(username, password, apiKey, secretTwoFactor);
 
-            DataWorker worker = new DataWorker(betfairConfig);
-
+            DataWorker worker = new DataWorker(betfairConfig, connectionString, databaseName);
+            
             while (true)
             {
+                int minute = 60000;
+
                 Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados da Betfair");
                 worker.Execute();
                 Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados da Betfair");
-                Thread.Sleep(20000);
+                
+                Thread.Sleep(minute * 30);
             }
         }
     }

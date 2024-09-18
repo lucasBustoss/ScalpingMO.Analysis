@@ -9,9 +9,9 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Worker
     {
         private readonly MongoDBService _mongoDB;
 
-        public DataWorker()
+        public DataWorker(string connectionString, string databaseName)
         {
-            _mongoDB = new MongoDBService();    
+            _mongoDB = new MongoDBService(connectionString, databaseName);    
         }
 
         public void Execute()

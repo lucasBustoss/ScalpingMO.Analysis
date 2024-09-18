@@ -9,9 +9,9 @@ namespace ScalpingMO.Analysis.Extract.FootballAPI.Data
         private readonly HttpClient _httpClient;
         private readonly MongoDBService _mongoDB;
 
-        public ApiService(string url, string apiKey, string apiHost)
+        public ApiService(string url, string apiKey, string apiHost, string connectionString, string databaseName)
         {
-            _mongoDB = new MongoDBService();
+            _mongoDB = new MongoDBService(connectionString, databaseName);
 
             _httpClient = new HttpClient() { BaseAddress = new Uri(url) };
             _httpClient.DefaultRequestHeaders.Add("X-RapidApi-Key", apiKey);
