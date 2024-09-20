@@ -1,14 +1,15 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.DevTools.V126.Page;
 using OpenQA.Selenium.Support.UI;
 using ScalpingMO.Analysis.Extract.FixtureData.Data;
+using ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair;
 using ScalpingMO.Analysis.Extract.FixtureData.Models;
+using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI;
+using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Response;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response.Odds;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.Radar;
 using SeleniumExtras.WaitHelpers;
-using System.Xml.Linq;
 
 namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 {
@@ -24,9 +25,16 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 
         #region FootballApi
 
-        Queue<ReferenceOddInfo> _referenceOdds;
+        private Queue<ReferenceOddInfo> _referenceOdds;
         private int _thresholdExtract = 200;
         private int _thresholdSave = 500;
+
+        #endregion
+
+        #region Betfair
+
+        private BetfairAPIService _betfairAPI;
+        private Queue<BetfairOddInfo> _betfairOdds;
 
         #endregion
 
@@ -38,11 +46,12 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         /// Parametro pra teste. Depois de tudo desenvolvido vou remvoer
         /// </summary>
         private int _tries = 0;
-        private int _triesThreshold = 800;
+        private int _triesThreshold = 20;
 
-        public DataWorker(MongoDBService mongoDB)
+        public DataWorker(MongoDBService mongoDB, BetfairAPIService betfairApi)
         {
             _mongoDB = mongoDB;
+            _betfairAPI = betfairApi;
         }
 
         public async Task Execute(Fixture fixture)
@@ -50,19 +59,22 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
             _fixture = fixture;
             
             string matchName = $"{fixture.HomeTeamName} x {fixture.AwayTeamName}";
-            Console.WriteLine($"Iniciando a extração dos dados do jogo {matchName}");
+            //Console.WriteLine($"Iniciando a extração dos dados do jogo {matchName}");
 
-            InitializeScrapper(fixture.RadarUrl);
-            InitializeFootballApi();
+            //InitializeScrapper(fixture.RadarUrl);
+            //InitializeFootballApi();
+            InitializeBetfairApi();
 
-            Task getCommentTask = ExecuteGetCommentAsync();
+            //Task getCommentTask = ExecuteGetCommentAsync();
             Task betfairApiTask = ExecuteBetfairApiAsync();
-            Task footballApiTask = ExecuteFootballApiAsync();
+            //Task footballApiTask = ExecuteFootballApiAsync();
 
-            Task saveRadarCommentsTask = ExecuteSaveRadarCommentsAsync();
-            Task saveReferenceOddTask = ExecuteSaveReferenceOddAsync();
+            //Task saveRadarCommentsTask = ExecuteSaveRadarCommentsAsync();
+            //Task saveReferenceOddTask = ExecuteSaveReferenceOddAsync();
+            Task saveBetfairOddTask = ExecuteSaveBetfairOddsAsync();
 
-            await Task.WhenAll(getCommentTask, betfairApiTask, footballApiTask, saveRadarCommentsTask, saveReferenceOddTask);
+            //await Task.WhenAll(getCommentTask, betfairApiTask, footballApiTask, saveRadarCommentsTask, saveReferenceOddTask);
+            await Task.WhenAll(betfairApiTask, saveBetfairOddTask);
 
             CloseScrapper();
 
@@ -86,8 +98,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         {
             while (!_matchFinished && _tries < _triesThreshold)
             {
-                //CallBetfairApi();  
-                await Task.Delay(_thresholdExtract);
+                await GetBetfairOdds();
             }
         }
 
@@ -123,6 +134,20 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
                 {
                     ReferenceOddInfo info = _referenceOdds.Dequeue();
                     _mongoDB.SaveReferenceOddInfo(info);
+                }
+
+                await Task.Delay(_thresholdSave);
+            }
+        }
+
+        private async Task ExecuteSaveBetfairOddsAsync()
+        {
+            while ((!_matchFinished && _tries < _triesThreshold) || _betfairOdds.Count > 0)
+            {
+                if (_betfairOdds.Count > 0)
+                {
+                    BetfairOddInfo info = _betfairOdds.Dequeue();
+                    _mongoDB.SaveBetfairOddInfo(info);
                 }
 
                 await Task.Delay(_thresholdSave);
@@ -269,6 +294,42 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 
             if (existsOdd == null)
                 _referenceOdds.Enqueue(oddInfo);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Betfair
+
+        #region Initialize
+
+        private void InitializeBetfairApi()
+        {
+            _betfairOdds = new Queue<BetfairOddInfo>();
+        }
+
+        #endregion
+
+        #region Task
+
+        private async Task GetBetfairOdds()
+        {
+            BetfairMarketBookResponse betfairResponse = await _betfairAPI.GetOdds(_fixture.MarketId);
+
+            if (betfairResponse != null)
+            {
+                BetfairOddInfo betfairOdd = new BetfairOddInfo(
+                    _fixture.BetfairId.Value, 
+                    betfairResponse, 
+                    _fixture.BetfairHomeTeamId.Value, 
+                    _fixture.BetfairAwayTeamId.Value, 
+                    _fixture.HomeTeamName, 
+                    _fixture.AwayTeamName);
+                
+                _betfairOdds.Enqueue(betfairOdd);
+                _tries++;
+            }
         }
 
         #endregion

@@ -9,7 +9,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
 {
     public class ApiService
     {
-        private string _token = "U6CyhuH4jMKG65Q5sUjijoxTT67IZKOlXhdEvjdzReo=";
+        private string _token = "Z7xBa1qfSofq7/pnJKh7IFeuexZtpnqZEcs7OBf7Uvw=";
         private BetfairConfiguration _configuration;
         private HttpClient _betfairClient;
         private HttpClient _authClient;
@@ -17,7 +17,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
         public ApiService(BetfairConfiguration configuration)
         {
             _configuration = configuration;
-            
+
             _betfairClient = new HttpClient() { BaseAddress = new Uri("https://api.betfair.com/exchange/betting/rest/v1.0/") };
             _betfairClient.DefaultRequestHeaders.Add("X-Application", configuration.ApiKey);
             _betfairClient.DefaultRequestHeaders.Add("X-Authentication", _token);
@@ -33,7 +33,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
         public async Task<List<Fixture>> GetFixtures()
         {
             List<Fixture> matches = new List<Fixture>();
-            
+
             List<BetfairEventResponse> betfairEvents = await GetEvents();
 
             foreach (BetfairEventResponse betfairEvent in betfairEvents)
@@ -56,11 +56,21 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
                     continue;
                 }
 
+                string marketId = null;
+                BetfairMarketCatalogueRunner homeRunner = null;
+                BetfairMarketCatalogueRunner awayRunner = null;
+
                 int id = Convert.ToInt32(betfairEvent.Event.Id);
                 DateTime date = Convert.ToDateTime(betfairEvent.Event.OpenDate);
-                string marketId = betfairMarket != null ? betfairMarket.MarketId : null;
 
-                Fixture match = new Fixture(id, date, marketId, homeTeamName, awayTeamName);
+                if (betfairMarket != null)
+                {
+                    marketId = betfairMarket != null ? betfairMarket.MarketId : null;
+                    homeRunner = betfairMarket.Runners.Where(r => r.RunnerName == homeTeamName).FirstOrDefault();
+                    awayRunner = betfairMarket.Runners.Where(r => r.RunnerName == awayTeamName).FirstOrDefault();
+                }
+
+                Fixture match = new Fixture(id, date, marketId, homeTeamName, awayTeamName, homeRunner, awayRunner);
                 matches.Add(match);
             }
 
@@ -155,6 +165,7 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Data
                 BetfairListMarketCatalogueRequest listMarketCatalogues = new BetfairListMarketCatalogueRequest()
                 {
                     Filter = new BetfairFilter() { EventIds = new List<string> { eventId }, MarketTypeCodes = ["MATCH_ODDS"] },
+                    MarketProjection = ["RUNNER_DESCRIPTION"],
                     MaxResults = 1,
                     CurrencyCode = "BRL"
                 };

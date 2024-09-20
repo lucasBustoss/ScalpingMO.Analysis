@@ -44,6 +44,8 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Worker
                 {
                     fixture.BetfairId = betfairFixtureWithCloserRatio.Id;
                     fixture.MarketId = betfairFixtureWithCloserRatio.MarketId;
+                    fixture.BetfairHomeTeamId = betfairFixtureWithCloserRatio.HomeTeamId;
+                    fixture.BetfairAwayTeamId = betfairFixtureWithCloserRatio.AwayTeamId;
                 }
 
                 #endregion

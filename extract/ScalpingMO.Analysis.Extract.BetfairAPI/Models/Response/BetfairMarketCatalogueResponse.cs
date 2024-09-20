@@ -6,5 +6,8 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI.Models.Response
     {
         [JsonPropertyName("marketId")]
         public string MarketId { get; set; }
+
+        [JsonPropertyName("runners")]
+        public List<BetfairMarketCatalogueRunner> Runners { get; set; }
     }
 }

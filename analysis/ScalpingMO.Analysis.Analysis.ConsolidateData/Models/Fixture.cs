@@ -36,6 +36,8 @@ namespace ScalpingMO.Analysis.Analysis.ConsolidateData.Models
         public string? MarketId { get; set; }
         public string? RadarUrl { get; set; }
         public int? BetfairId { get; set; }
+        public int? BetfairHomeTeamId { get; set; }
+        public int? BetfairAwayTeamId { get; set; }
         public int? WilliamHillId { get; set; }
         public bool ShouldAnalyze { get; set; }
     }

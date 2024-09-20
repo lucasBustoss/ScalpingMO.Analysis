@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ScalpingMO.Analysis.Extract.WilliamHill")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+23322c7e62ebbe4937a8f49910cd011a51431ef5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d1ea027a476e2c72536ef2ebdad8c15266925592")]
 [assembly: System.Reflection.AssemblyProductAttribute("ScalpingMO.Analysis.Extract.WilliamHill")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ScalpingMO.Analysis.Extract.WilliamHill")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

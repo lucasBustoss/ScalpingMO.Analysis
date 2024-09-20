@@ -14,14 +14,23 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Data
         {
             _url = url;
 
+            string enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArgument("--headless");  // Para rodar no Docker sem interface gráfica
-            chromeOptions.AddArgument("--no-sandbox");  // Recomendado para Docker
-            chromeOptions.AddArgument("--disable-dev-shm-usage");  // Evita problemas com espaço limitado
 
-            chromeOptions.BinaryLocation = Environment.GetEnvironmentVariable("CHROME_BIN");
+            var chromeDriverService = ChromeDriverService.CreateDefaultService();
+            chromeDriverService.SuppressInitialDiagnosticInformation = true;  // Suprime logs de inicialização
+            chromeDriverService.EnableVerboseLogging = false;  // Desativa logs detalhados
+            chromeDriverService.HideCommandPromptWindow = true;  // Oculta a janela de comando (somente no Windows)
 
-            _driver = new ChromeDriver(chromeOptions);
+            if (enviroment == "Docker")
+            {
+                chromeOptions.AddArgument("--headless");  // Para rodar no Docker sem interface gráfica
+                chromeOptions.AddArgument("--no-sandbox");  // Recomendado para Docker
+                chromeOptions.AddArgument("--disable-dev-shm-usage");  // Evita problemas com espaço limitado
+            }
+
+            _driver = new ChromeDriver(chromeDriverService, chromeOptions);
             _driver.Navigate().GoToUrl(_url);
             Thread.Sleep(2000);
         }

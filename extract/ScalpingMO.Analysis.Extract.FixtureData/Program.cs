@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using ScalpingMO.Analysis.Extract.FixtureData.Data;
-using ScalpingMO.Analysis.Extract.FixtureData.Models;
-using ScalpingMO.Analysis.Extract.FixtureData.Worker;
+using ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair;
 
 namespace ScalpingMO.Analysis.Extract.FixtureData
 {
@@ -9,7 +8,6 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Iniciando aplicação de verificação e extração de dados de jogos");
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             var config = new ConfigurationBuilder()
@@ -22,19 +20,32 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
             string analysisDatabaseName = config["MongoDB:AnalysisDatabaseName"];
             string extractDatabaseName = config["MongoDB:ExtractDatabaseName"];
 
+            string betfairApiUrl = config["BetfairAPI:Url"];
+            string betfairApiKey = config["BetfairAPI:AppKey"];
+            string betfairApiToken = config["BetfairAPI:Token"];
+
+            BetfairAPIService betfairApi = new BetfairAPIService(betfairApiUrl, betfairApiKey, betfairApiToken);
+            MongoDBService mongoDb = new MongoDBService(connectionString, analysisDatabaseName, extractDatabaseName);
+            BetfairScrapper scrapper = new BetfairScrapper(mongoDb, betfairApi);
+            await scrapper.Scrap("33589534", "1.233041971");
+
+            /*
+            Console.WriteLine("Iniciando aplicação de verificação e extração de dados de jogos");
+
+
             string footballApiUrl = config["FootballAPI:Url"];
             string footballApiKey = config["FootballAPI:ApiKey"];
             string footballApiHost = config["FootballAPI:ApiHost"];
 
-            MongoDBService mongoDb = new MongoDBService(connectionString, analysisDatabaseName, extractDatabaseName);
             FootballAPIService footballApiService = new FootballAPIService(mongoDb, footballApiUrl, footballApiKey, footballApiHost);
             HashSet<string> processedFixtures = new HashSet<string>();
 
+
             while (true)
             {
-                Console.WriteLine($"{DateTime.UtcNow} - Consultando dados de odds de referência");
-                await footballApiService.GetLiveOdds();
-                Console.WriteLine($"{DateTime.UtcNow} - Fim da consulta de dados de odds de referência");
+                //Console.WriteLine($"{DateTime.UtcNow} - Consultando dados de odds de referência");
+                //await footballApiService.GetLiveOdds();
+                //Console.WriteLine($"{DateTime.UtcNow} - Fim da consulta de dados de odds de referência");
 
                 List<Fixture> fixtures = mongoDb.GetFixturesToExtractData();
                 List<Task> tasks = new List<Task>();
@@ -46,7 +57,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
                         // Dispara a execução do worker sem aguardar a conclusão
                         _ = Task.Run(async () =>
                         {
-                            DataWorker worker = new DataWorker(mongoDb);
+                            DataWorker worker = new DataWorker(mongoDb, betfairApiService);
                             await worker.Execute(fixture);
                         });
 
@@ -56,6 +67,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
 
                 await Task.Delay(30000);
             }
+            */
         }
     }
 }
