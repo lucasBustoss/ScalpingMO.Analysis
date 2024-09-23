@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using ScalpingMO.Analysis.Extract.FixtureData.Data;
 using ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair;
+using ScalpingMO.Analysis.Extract.FixtureData.Models;
+using ScalpingMO.Analysis.Extract.FixtureData.Worker;
 
 namespace ScalpingMO.Analysis.Extract.FixtureData
 {
@@ -24,14 +26,11 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
             string betfairApiKey = config["BetfairAPI:AppKey"];
             string betfairApiToken = config["BetfairAPI:Token"];
 
-            BetfairAPIService betfairApi = new BetfairAPIService(betfairApiUrl, betfairApiKey, betfairApiToken);
+            BetfairAPIService betfairApiService = new BetfairAPIService(betfairApiUrl, betfairApiKey, betfairApiToken);
             MongoDBService mongoDb = new MongoDBService(connectionString, analysisDatabaseName, extractDatabaseName);
-            BetfairScrapper scrapper = new BetfairScrapper(mongoDb, betfairApi);
-            await scrapper.Scrap("33589534", "1.233041971");
 
-            /*
+
             Console.WriteLine("Iniciando aplicação de verificação e extração de dados de jogos");
-
 
             string footballApiUrl = config["FootballAPI:Url"];
             string footballApiKey = config["FootballAPI:ApiKey"];
@@ -43,9 +42,9 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
 
             while (true)
             {
-                //Console.WriteLine($"{DateTime.UtcNow} - Consultando dados de odds de referência");
-                //await footballApiService.GetLiveOdds();
-                //Console.WriteLine($"{DateTime.UtcNow} - Fim da consulta de dados de odds de referência");
+                Console.WriteLine($"{DateTime.UtcNow} - Consultando dados de odds de referência");
+                await footballApiService.GetLiveOdds();
+                Console.WriteLine($"{DateTime.UtcNow} - Fim da consulta de dados de odds de referência");
 
                 List<Fixture> fixtures = mongoDb.GetFixturesToExtractData();
                 List<Task> tasks = new List<Task>();
@@ -67,7 +66,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData
 
                 await Task.Delay(30000);
             }
-            */
+
         }
     }
 }

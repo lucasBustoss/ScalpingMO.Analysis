@@ -17,6 +17,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
         private MongoDBService _mongoDb;
         private BetfairCookie _credentials;
         private BetfairAPIService _betfairApi;
+        private BetfairScrapperMatch _match;
 
         private string _username = "lucasbustoss";
         private string _password = "simSenhor0182@";
@@ -27,87 +28,72 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
         private string _baseUrlMarket = "https://software.layback.me/market?";
         private string _urlMarket;
 
-        public BetfairScrapper(MongoDBService mongoDb, BetfairAPIService betfairApi)
+        public BetfairScrapper(MongoDBService mongoDb, BetfairAPIService betfairApi, BetfairScrapperMatch match)
         {
             _mongoDb = mongoDb;
             _credentials = mongoDb.GetBetfairCredentials();
+            _match = match;
+
+            _mongoDb.SaveBetfairScrapperMatch(match);
 
             StartDriver();
             _betfairApi = betfairApi;
-            //Login();
 
-        }
-
-        public async Task Scrap(string eventId, string marketId)
-        {
-            BetfairEventResponse betfairEvent = await GetBetfairEvent(eventId);
-
-            if (betfairEvent == null)
-                return;
-
-            _urlMarket = GetUrlMarket(eventId, marketId);
+            _urlMarket = GetUrlMarket(match.EventId.ToString(), match.MarketId);
             _driver.Navigate().GoToUrl(_urlMarket);
 
             Thread.Sleep(6000);
-            BetfairScrapperMatch match = new BetfairScrapperMatch(betfairEvent.Event.Name, Convert.ToInt32(eventId), marketId);
-            _mongoDb.SaveBetfairScrapperMatch(match);
+        }
 
-            int tries = 0;
+        public void Scrap(BetfairScrapperExecution execution)
+        {
+            Console.WriteLine($"Inicio odds jogo {_match.MatchName} {DateTime.UtcNow}");
+            string minute = "";
 
-            while (tries < 5)
+            try
             {
-                Console.WriteLine($"Inicio odds {DateTime.UtcNow}");
-
-                BetfairScrapperExecution execution = new BetfairScrapperExecution();
-                IWebElement minuteElement = _wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("(//p[contains(@style, 'color: rgb(0, 210, 0)')])[2]")));
-                string minute = minuteElement.GetAttribute("innerHTML").Replace("'", "");
-                
-                GetLadderInfo(match, execution, minute);
-                _mongoDb.SaveBetfairScrapperExecutionInMatch(Convert.ToInt32(eventId), execution);
-                
-                Console.WriteLine($"Fim odds {DateTime.UtcNow}");
-
-                if (minute == "Intervalo")
-                    Thread.Sleep(60000);
-                else
-                    Thread.Sleep(2000);
-
-                tries++;
+                IWebElement minuteElement = _driver.FindElement(By.XPath("(//p[contains(@style, 'color: rgb(0, 210, 0)')])[2]"));
+                minute = minuteElement.GetAttribute("innerHTML").Replace("'", "");
+                execution.Minute = minute;
             }
+            catch
+            {
+
+            }
+
+            GetLadderInfo(_match, execution, minute);
+
+            Console.WriteLine($"Fim odds jogo {_match.MatchName} {DateTime.UtcNow}");
         }
 
         #region Private methods
 
-        private async Task<BetfairEventResponse> GetBetfairEvent(string eventId)
-        {
-            List<BetfairEventResponse> events = await _betfairApi.GetEvents(eventId);
-
-            if (events != null && events.Count > 0)
-                return events.FirstOrDefault();
-
-            return null;
-        }
-
         private void StartDriver()
         {
-            string enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             var chromeOptions = new ChromeOptions();
-
             var chromeDriverService = ChromeDriverService.CreateDefaultService();
-            chromeDriverService.SuppressInitialDiagnosticInformation = true;  // Suprime logs de inicialização
-            chromeDriverService.EnableVerboseLogging = false;  // Desativa logs detalhados
-            chromeDriverService.HideCommandPromptWindow = true;  // Oculta a janela de comando (somente no Windows)
+            chromeDriverService.SuppressInitialDiagnosticInformation = true;
+            chromeDriverService.EnableVerboseLogging = false;
+            chromeDriverService.HideCommandPromptWindow = true;  // Oculta a janela de comando no Windows
 
-            if (enviroment == "Docker")
+            if (environment == "Docker")
             {
-                chromeOptions.AddArgument("--headless");  // Para rodar no Docker sem interface gráfica
-                chromeOptions.AddArgument("--no-sandbox");  // Recomendado para Docker
-                chromeOptions.AddArgument("--disable-dev-shm-usage");  // Evita problemas com espaço limitado
+                chromeOptions.AddArgument("--headless");
+                chromeOptions.AddArgument("--no-sandbox");
+                chromeOptions.AddArgument("--disable-dev-shm-usage");
+                chromeOptions.AddArgument("--disable-gpu");
+                chromeOptions.AddArgument("--disable-software-rasterizer");
+                chromeOptions.AddArgument("--disable-extensions");
+                chromeOptions.AddArgument("--disable-infobars");
+                chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
+                chromeOptions.AddArgument("--window-size=1920,1080");  // Define um tamanho padrão de janela
             }
 
             _driver = new ChromeDriver(chromeDriverService, chromeOptions);
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(3));
+
             _driver.Navigate().GoToUrl("https://software.layback.me/");
 
             SetCookies();
@@ -224,8 +210,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                     return;
                 }
 
-                // Iterar apenas sobre os elementos encontrados em paralelo
-                Parallel.For(0, Math.Min(teams.Count, ladders.Count), i =>
+                Parallel.For(0, Math.Min(teams.Count, ladders.Count), new ParallelOptions { MaxDegreeOfParallelism = 8 }, i =>
                 {
                     IWebElement team = teams[i];
                     IWebElement ladder = ladders[i];
@@ -254,40 +239,50 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
             try
             {
                 List<BetfairScrapperOdd> betfairOdds = new List<BetfairScrapperOdd>();
-
                 IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
 
                 var oddsData = (ReadOnlyCollection<object>)js.ExecuteScript(@"
                     var secondDivChild = arguments[0].querySelector('div:nth-child(2)');
                     if (!secondDivChild) return [];
 
-                    // Captura apenas as divs filhas diretas
-                    var oddsElements = Array.from(secondDivChild.children);
+                    // Captura apenas as divs filhas diretas e limita a quantidade de elementos buscados
+                    var oddsElements = secondDivChild.children;
                     var result = [];
-                    oddsElements.forEach(function(element) {
-                        var oddElement = element.querySelector('div > p');
-                        var oddValue = oddElement ? oddElement.textContent.trim() : null;
-                        var oddClass = oddElement ? oddElement.className : null;
+            
+                    for (var i = 0; i < oddsElements.length; i++) {
+                        var element = oddsElements[i];
+
+                        // Captura o elemento <p> da odd
+                        var oddElement = element.querySelector('p');
+                        if (!oddElement) continue;
+
+                        var oddValue = oddElement.textContent.trim();
+                        var oddClass = oddElement.className;
 
                         // Capturar textContent para garantir que o texto dos botões seja extraído
-                        var buttons = Array.from(element.querySelectorAll('div > button')).map(button => button.textContent.trim());
+                        var buttons = [];
+                        var buttonElements = element.querySelectorAll('button');
+                        for (var j = 0; j < buttonElements.length; j++) {
+                            buttons.push(buttonElements[j].textContent.trim());
+                        }
+
                         result.push({ odd: oddValue, oddClass: oddClass, buttons: buttons });
-                    });
+                    }
+
                     return result;
                 ", ladder);
+
 
                 // Iterar sobre a coleção retornada
                 foreach (var data in oddsData)
                 {
-                    // Cada item é um dicionário que contém "odd", "oddClass", e "buttons"
                     var dict = (IDictionary<string, object>)data;
                     string odd = dict["odd"]?.ToString();
                     string oddClass = dict["oddClass"]?.ToString();
                     var buttons = (ReadOnlyCollection<object>)dict["buttons"];
 
-                    if (string.IsNullOrEmpty(odd)) 
-                        continue;
-                    
+                    if (string.IsNullOrEmpty(odd)) continue;
+
                     bool isLastCorrespondence = !string.IsNullOrEmpty(oddClass) && oddClass.Contains("bg-white");
 
                     string availableToLay = buttons.Count > 2 ? buttons[1].ToString() : "";

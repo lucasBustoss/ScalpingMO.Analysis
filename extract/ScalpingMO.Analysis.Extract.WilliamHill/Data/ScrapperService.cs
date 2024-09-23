@@ -87,15 +87,23 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Data
                 IWebElement dateElement = matchDates[i];
 
                 string hour = dateElement.GetAttribute("innerHTML");
-                string[] linkArray = linkElement.GetAttribute("href").Split("/");
-                string matchName = linkArray[linkArray.Length - 1];
+                
+                try
+                {
+                    string[] linkArray = linkElement.GetAttribute("href").Split("/");
+                    
+                    string matchName = linkArray[linkArray.Length - 1];
 
-                int id = Convert.ToInt32(linkArray[linkArray.Length - 2].Replace("OB_EV", ""));
-                string homeTeamName = ToTitleCase(matchName.Split("-vs-")[0]);
-                string awayTeamName = ToTitleCase(matchName.Split("-vs-")[1]);
+                    int id = Convert.ToInt32(linkArray[linkArray.Length - 2].Replace("OB_EV", ""));
+                    string homeTeamName = ToTitleCase(matchName.Split("-vs-")[0]);
+                    string awayTeamName = ToTitleCase(matchName.Split("-vs-")[1]);
 
-                Fixture fixture = new Fixture(id, homeTeamName, awayTeamName, date, hour);
-                fixtures.Add(fixture);
+                    Fixture fixture = new Fixture(id, homeTeamName, awayTeamName, date, hour);
+                    fixtures.Add(fixture);
+                }
+                catch
+                {
+                }
             }
 
             return fixtures;

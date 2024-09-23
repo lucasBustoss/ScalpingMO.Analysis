@@ -4,8 +4,8 @@ using OpenQA.Selenium.Support.UI;
 using ScalpingMO.Analysis.Extract.FixtureData.Data;
 using ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair;
 using ScalpingMO.Analysis.Extract.FixtureData.Models;
-using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Response;
+using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Scrapper;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.FootballAPI.Response.Odds;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.Radar;
@@ -28,13 +28,17 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         private Queue<ReferenceOddInfo> _referenceOdds;
         private int _thresholdExtract = 200;
         private int _thresholdSave = 500;
+        private WebDriverWait _wait;
 
         #endregion
 
         #region Betfair
 
         private BetfairAPIService _betfairAPI;
-        private Queue<BetfairOddInfo> _betfairOdds;
+        private BetfairScrapper _betfairScrapper;
+        private BetfairEventResponse _event;
+        private Queue<BetfairScrapperExecution> _betfairScrapperOdds;
+        private BetfairScrapperMatch _betfairScrapperMatch;
 
         #endregion
 
@@ -46,7 +50,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         /// Parametro pra teste. Depois de tudo desenvolvido vou remvoer
         /// </summary>
         private int _tries = 0;
-        private int _triesThreshold = 20;
+        private int _triesThreshold = 100000;
 
         public DataWorker(MongoDBService mongoDB, BetfairAPIService betfairApi)
         {
@@ -57,24 +61,23 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         public async Task Execute(Fixture fixture)
         {
             _fixture = fixture;
-            
+
             string matchName = $"{fixture.HomeTeamName} x {fixture.AwayTeamName}";
-            //Console.WriteLine($"Iniciando a extração dos dados do jogo {matchName}");
+            Console.WriteLine($"Iniciando a extração dos dados do jogo {matchName}");
 
-            //InitializeScrapper(fixture.RadarUrl);
-            //InitializeFootballApi();
-            InitializeBetfairApi();
+            await InitializeBetfairApi(fixture.BetfairId.Value);
+            InitializeScrapper(fixture.RadarUrl);
+            InitializeFootballApi();
 
-            //Task getCommentTask = ExecuteGetCommentAsync();
+            Task getCommentTask = ExecuteGetCommentAsync();
             Task betfairApiTask = ExecuteBetfairApiAsync();
-            //Task footballApiTask = ExecuteFootballApiAsync();
+            Task footballApiTask = ExecuteFootballApiAsync();
 
-            //Task saveRadarCommentsTask = ExecuteSaveRadarCommentsAsync();
-            //Task saveReferenceOddTask = ExecuteSaveReferenceOddAsync();
+            Task saveRadarCommentsTask = ExecuteSaveRadarCommentsAsync();
+            Task saveReferenceOddTask = ExecuteSaveReferenceOddAsync();
             Task saveBetfairOddTask = ExecuteSaveBetfairOddsAsync();
 
-            //await Task.WhenAll(getCommentTask, betfairApiTask, footballApiTask, saveRadarCommentsTask, saveReferenceOddTask);
-            await Task.WhenAll(betfairApiTask, saveBetfairOddTask);
+            await Task.WhenAll(getCommentTask, betfairApiTask, footballApiTask, saveRadarCommentsTask, saveReferenceOddTask, saveBetfairOddTask);
 
             CloseScrapper();
 
@@ -90,7 +93,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
             while (!_matchFinished && _tries < _triesThreshold)
             {
                 GetComment();
-                await Task.Delay(_thresholdExtract);
+                await Task.Delay(1000);
             }
         }
 
@@ -98,7 +101,10 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         {
             while (!_matchFinished && _tries < _triesThreshold)
             {
-                await GetBetfairOdds();
+                BetfairScrapperExecution execution = new BetfairScrapperExecution();
+                GetBetfairScrapperOdds(execution);
+
+                await Task.Delay(500);
             }
         }
 
@@ -142,12 +148,12 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 
         private async Task ExecuteSaveBetfairOddsAsync()
         {
-            while ((!_matchFinished && _tries < _triesThreshold) || _betfairOdds.Count > 0)
+            while ((!_matchFinished && _tries < _triesThreshold) || _betfairScrapperOdds.Count > 0)
             {
-                if (_betfairOdds.Count > 0)
+                if (_betfairScrapperOdds.Count > 0)
                 {
-                    BetfairOddInfo info = _betfairOdds.Dequeue();
-                    _mongoDB.SaveBetfairOddInfo(info);
+                    BetfairScrapperExecution execution = _betfairScrapperOdds.Dequeue();
+                    _mongoDB.SaveBetfairScrapperExecutionInMatch(_betfairScrapperMatch.EventId, execution);
                 }
 
                 await Task.Delay(_thresholdSave);
@@ -163,17 +169,14 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         private void InitializeScrapper(string url)
         {
             _comments = new Queue<RadarInfo>();
-
             StartDriver();
 
             _driver.Navigate().GoToUrl(url);
 
-            WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-            IWebElement balloonButton = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-action=\"commentaries\"]/a")));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            IWebElement balloonButton = _wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@data-action=\"commentaries\"]/a")));
             balloonButton.Click();
 
-            wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-            _commentBox = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@id=\"box_commentaries\"]")));
         }
 
         private void StartDriver()
@@ -181,7 +184,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
             string enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
             var chromeOptions = new ChromeOptions();
-            
+
             var chromeDriverService = ChromeDriverService.CreateDefaultService();
             chromeDriverService.SuppressInitialDiagnosticInformation = true;  // Suprime logs de inicialização
             chromeDriverService.EnableVerboseLogging = false;  // Desativa logs detalhados
@@ -195,7 +198,6 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
             }
 
             _driver = new ChromeDriver(chromeDriverService, chromeOptions);
-
         }
 
         private void CloseScrapper()
@@ -211,6 +213,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
         {
             try
             {
+                _commentBox = _wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@id=\"box_commentaries\"]")));
                 IEnumerable<IWebElement> listComments = _commentBox.FindElements(By.XPath("ul/li"));
 
                 if (listComments != null && listComments.Count() > 0)
@@ -230,6 +233,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
                         }
 
                         string seconds = comment.FindElement(By.XPath("span[@class=\"time\"]/span[@class=\"seconds\"]")).GetAttribute("innerHTML").Replace("'", "");
+
                         string description = comment.FindElement(By.XPath("span[@class=\"comment_data\"]")).GetAttribute("innerHTML");
 
                         string time = minute != null && seconds != null ? $"{minute}:{seconds}" : "-";
@@ -285,7 +289,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 
             ReferenceOddInfo oddInfo = new ReferenceOddInfo(odds.Fixture, odds.Odds);
 
-            ReferenceOddInfo existsOdd = _referenceOdds.Where(f => 
+            ReferenceOddInfo existsOdd = _referenceOdds.Where(f =>
                 f.FootballApiId == oddInfo.FootballApiId &&
                 f.Minute == oddInfo.Minute &&
                 f.HomeOdd == oddInfo.HomeOdd &&
@@ -304,32 +308,23 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
 
         #region Initialize
 
-        private void InitializeBetfairApi()
+        private async Task InitializeBetfairApi(int eventId)
         {
-            _betfairOdds = new Queue<BetfairOddInfo>();
+            _event = await _betfairAPI.GetEvent(eventId.ToString());
+
+            _betfairScrapperMatch = new BetfairScrapperMatch(_event.Event.Name, Convert.ToInt32(_event.Event.Id), _fixture.MarketId);
+            _betfairScrapper = new BetfairScrapper(_mongoDB, _betfairAPI, _betfairScrapperMatch);
+            _betfairScrapperOdds = new Queue<BetfairScrapperExecution>();
         }
 
         #endregion
 
         #region Task
 
-        private async Task GetBetfairOdds()
+        private void GetBetfairScrapperOdds(BetfairScrapperExecution execution)
         {
-            BetfairMarketBookResponse betfairResponse = await _betfairAPI.GetOdds(_fixture.MarketId);
-
-            if (betfairResponse != null)
-            {
-                BetfairOddInfo betfairOdd = new BetfairOddInfo(
-                    _fixture.BetfairId.Value, 
-                    betfairResponse, 
-                    _fixture.BetfairHomeTeamId.Value, 
-                    _fixture.BetfairAwayTeamId.Value, 
-                    _fixture.HomeTeamName, 
-                    _fixture.AwayTeamName);
-                
-                _betfairOdds.Enqueue(betfairOdd);
-                _tries++;
-            }
+            _betfairScrapper.Scrap(execution);
+            _betfairScrapperOdds.Enqueue(execution);
         }
 
         #endregion

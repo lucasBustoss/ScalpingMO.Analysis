@@ -8,6 +8,7 @@
         }
 
         public DateTime DateTime { get; set; }
+        public string Minute { get; set; }
         public BetfairScrapperTeamOdd HomeOdds { get; set; }
         public BetfairScrapperTeamOdd DrawOdds { get; set; }
         public BetfairScrapperTeamOdd AwayOdds { get; set; }

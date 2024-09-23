@@ -20,7 +20,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
             _betfairClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
         }
 
-        public async Task<List<BetfairEventResponse>> GetEvents(string eventId)
+        public async Task<BetfairEventResponse> GetEvent(string eventId)
         {
             BetfairEventsRequest listEvents = new BetfairEventsRequest();
             listEvents.Filter.EventTypeIds = ["1"];
@@ -39,11 +39,11 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                 if (events == null)
                     return null;
 
-                return events;
+                return events.FirstOrDefault() ;
             }
             else
             {
-                return await CheckErrorBetfair(() => GetEvents(eventId), request);
+                return await CheckErrorBetfair(() => GetEvent(eventId), request);
             }
         }
 

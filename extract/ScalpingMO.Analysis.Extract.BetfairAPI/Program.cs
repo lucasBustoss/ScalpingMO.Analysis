@@ -27,15 +27,22 @@ namespace ScalpingMO.Analysis.Extract.BetfairAPI
             BetfairConfiguration betfairConfig = new BetfairConfiguration(username, password, apiKey, secretTwoFactor);
 
             DataWorker worker = new DataWorker(betfairConfig, connectionString, databaseName);
-            
+
             while (true)
             {
                 int minute = 60000;
 
-                Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados da Betfair");
-                worker.Execute();
-                Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados da Betfair");
-                
+                try
+                {
+                    Console.WriteLine($"{DateTime.UtcNow} - Iniciando extração dos dados da Betfair");
+                    worker.Execute();
+                    Console.WriteLine($"{DateTime.UtcNow} - Fim da extração dos dados da Betfair");
+                }
+                catch
+                {
+                    Console.WriteLine($"{DateTime.UtcNow} - Erro na extração dos dados da Betfair");
+                }
+
                 Thread.Sleep(minute * 30);
             }
         }

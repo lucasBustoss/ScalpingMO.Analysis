@@ -4,11 +4,9 @@
     {
         public BetfairScrapperTeamOdd(string minute)
         {
-            Minute = minute;
             Odds = new List<BetfairScrapperOdd>();
         }
 
-        public string Minute { get; set; }
         public List<BetfairScrapperOdd> Odds { get; set; }
     }
 }

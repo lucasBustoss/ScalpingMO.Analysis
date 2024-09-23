@@ -16,7 +16,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
         private readonly IMongoCollection<RadarInfo> _radarCollection;
         private readonly IMongoCollection<ReferenceOddInfo> _referenceOddCollection;
         private readonly IMongoCollection<BetfairOddInfo> _betfairOddCollection;
-        private readonly IMongoCollection<BetfairScrapperMatch> _betfairScrapperMatchCollection;
+        private readonly IMongoCollection<BetfairScrapperMatch> _betfairScrapperOddCollection;
         private readonly IMongoCollection<RateLimit> _rateCollection;
         private readonly IMongoCollection<OddResponseRaw> _oddResponseRawCollection;
         private readonly IMongoCollection<BetfairCookie> _betfairCredentialsCollection;
@@ -29,32 +29,26 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
             _fixturesCollection = analysisDatabase.GetCollection<Fixture>("fixtures");
 
             var extractDatabase = client.GetDatabase(extractDatabaseName);
-            _radarCollection = extractDatabase.GetCollection<RadarInfo>("williamhill_info");
-            _referenceOddCollection = extractDatabase.GetCollection<ReferenceOddInfo>("footballapi_info");
-            _betfairOddCollection = extractDatabase.GetCollection<BetfairOddInfo>("betfair_info");
+
             _betfairCredentialsCollection = extractDatabase.GetCollection<BetfairCookie>("betfair_credentials");
             _rateCollection = extractDatabase.GetCollection<RateLimit>("footballapi_rate");
             _oddResponseRawCollection = extractDatabase.GetCollection<OddResponseRaw>("footballapi_odd_raw");
-            _betfairScrapperMatchCollection = extractDatabase.GetCollection<BetfairScrapperMatch>("betfair_scrapper_match");
+
+            _radarCollection = extractDatabase.GetCollection<RadarInfo>("williamhill_info");
+            _referenceOddCollection = extractDatabase.GetCollection<ReferenceOddInfo>("footballapi_info");
+            _betfairOddCollection = extractDatabase.GetCollection<BetfairOddInfo>("betfair_info");
+            _betfairScrapperOddCollection = extractDatabase.GetCollection<BetfairScrapperMatch>("betfair_scrapper_info");
         }
 
         public List<Fixture> GetFixturesToExtractData()
         {
             DateTime actualDate = DateTime.UtcNow;
-            //List<Fixture> fixtures =
-            //    _fixturesCollection.Find(f =>
-            //        f.WilliamHillId != null &&
-            //        f.BetfairId != null &&
-            //        f.Status != "FT" &&
-            //        f.ShouldAnalyze && actualDate >= f.Date.AddMinutes(-1)
-            //    ).ToList();
-
             List<Fixture> fixtures =
                 _fixturesCollection.Find(f =>
                     f.WilliamHillId != null &&
                     f.BetfairId != null &&
                     f.Status != "FT" &&
-                    f.ShouldAnalyze && actualDate >= f.Date.AddMinutes(-30)
+                    f.ShouldAnalyze && actualDate >= f.Date.AddMinutes(-1)
                 ).ToList();
 
             return fixtures;
@@ -151,10 +145,10 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
 
         public void SaveBetfairScrapperMatch(BetfairScrapperMatch match)
         {
-            BetfairScrapperMatch existentMatch = _betfairScrapperMatchCollection.Find(b => b.EventId == match.EventId).FirstOrDefault();
+            BetfairScrapperMatch existentMatch = _betfairScrapperOddCollection.Find(b => b.EventId == match.EventId).FirstOrDefault();
 
             if (existentMatch == null)
-                _betfairScrapperMatchCollection.InsertOne(match);
+                _betfairScrapperOddCollection.InsertOne(match);
         }
 
         public void SaveBetfairScrapperExecutionInMatch(int eventId, BetfairScrapperExecution execution)
@@ -162,7 +156,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
             var filter = Builders<BetfairScrapperMatch>.Filter.Eq(m => m.EventId, eventId);
             var update = Builders<BetfairScrapperMatch>.Update.Push(m => m.Executions, execution);
             
-            _betfairScrapperMatchCollection.UpdateOne(filter, update);
+            _betfairScrapperOddCollection.UpdateOne(filter, update);
         }
 
         #endregion
