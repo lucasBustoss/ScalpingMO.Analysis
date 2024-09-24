@@ -21,11 +21,7 @@
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="129.0.6668.5800" />
     <PackageReference Include="TwoFactorAuth.Net" Version="1.4.0" />
   </ItemGroup>
-
-  <Target Name="PlaywrightInstall" AfterTargets="PostBuildEvent">
-    <Exec Command="powershell -ExecutionPolicy Bypass -File bin\Debug\net8.0\playwright.ps1 install" />
-  </Target>
-
+  
   <ItemGroup>
     <None Update="appsettings.Docker.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
