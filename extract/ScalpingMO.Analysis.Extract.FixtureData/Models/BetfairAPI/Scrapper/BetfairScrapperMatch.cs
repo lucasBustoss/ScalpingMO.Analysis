@@ -11,13 +11,17 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Scrapper
             MatchName = matchName;
             EventId = eventId;
             MarketId = marketId;
-            Executions = new List<BetfairScrapperExecution>();
+            DateTime = DateTime.UtcNow;
         }
 
         public ObjectId Id { get; set; }
         public string MatchName { get; set; }
         public int EventId { get; set; }
         public string MarketId { get; set; }
-        public List<BetfairScrapperExecution> Executions { get; set; }
+        public DateTime DateTime { get; set; }
+        public string Minute { get; set; }
+        public BetfairScrapperTeamOdd HomeOdds { get; set; }
+        public BetfairScrapperTeamOdd DrawOdds { get; set; }
+        public BetfairScrapperTeamOdd AwayOdds { get; set; }
     }
 }

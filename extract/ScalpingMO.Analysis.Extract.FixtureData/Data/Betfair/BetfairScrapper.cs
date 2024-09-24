@@ -1,175 +1,159 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+﻿using Microsoft.Playwright;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Response;
 using ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Scrapper;
 using SeleniumExtras.WaitHelpers;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Web;
+using System.Text.Json;
+using Cookie = Microsoft.Playwright.Cookie;
 
 namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
 {
     public class BetfairScrapper
     {
-        private IWebDriver _driver;
-        private WebDriverWait _wait;
+        private IPage _page;
+        private IBrowser _browser;
         private MongoDBService _mongoDb;
         private BetfairCookie _credentials;
         private BetfairAPIService _betfairApi;
-        private BetfairScrapperMatch _match;
 
-        private string _username = "lucasbustoss";
+        private string _username = "carolbetfair111";
         private string _password = "simSenhor0182@";
-        private string _secretCodeTwoFactor = "LACUV35V5VEB5PFU";
+        private string _secretCodeTwoFactor = "NML23LV6FH2GDLSG";
 
         private string _urlLogin = "https://identitysso.betfair.com/view/login?product=vendor&url=https%3A%2F%2Fidentitysso.betfair.com%2Fview%2Fvendor-login%3Fresponse_type%3Dcode%26redirect_uri%3Dauthenticate%26client_id%3D118466";
 
         private string _baseUrlMarket = "https://software.layback.me/market?";
         private string _urlMarket;
 
-        public BetfairScrapper(MongoDBService mongoDb, BetfairAPIService betfairApi, BetfairScrapperMatch match)
+        public BetfairScrapper(MongoDBService mongoDb, BetfairAPIService betfairApi, IBrowser browser, string matchName, string eventId, string marketId)
         {
             _mongoDb = mongoDb;
             _credentials = mongoDb.GetBetfairCredentials();
-            _match = match;
+            _browser = browser;
 
-            _mongoDb.SaveBetfairScrapperMatch(match);
-
-            StartDriver();
             _betfairApi = betfairApi;
 
-            _urlMarket = GetUrlMarket(match.EventId.ToString(), match.MarketId);
-            _driver.Navigate().GoToUrl(_urlMarket);
-
-            Thread.Sleep(6000);
+            _urlMarket = GetUrlMarket(eventId, marketId);
         }
 
-        public void Scrap(BetfairScrapperExecution execution)
+        public async Task StartDriver()
         {
-            Console.WriteLine($"Inicio odds jogo {_match.MatchName} {DateTime.UtcNow}");
+            var context = await _browser.NewContextAsync();
+
+            // Navegar até a URL e configurar os cookies
+            _page = await context.NewPageAsync();
+            await _page.GotoAsync("https://software.layback.me/");
+
+            await SetCookiesAsync(context);
+
+            await _page.GotoAsync("https://software.layback.me/");
+            await Task.Delay(10000);
+
+            var currentUrl = _page.Url;
+
+            if (currentUrl == "https://software.layback.me/login?tokenExpired=true" || currentUrl == "https://software.layback.me/login")
+            {
+                Console.WriteLine("cai no login");
+                await LoginAsync();
+            }
+            else
+                Console.WriteLine("não cai no login");
+
+
+            await _page.GotoAsync(_urlMarket);
+            await Task.Delay(3000);
+        }
+
+        public async Task ScrapAsync(BetfairScrapperMatch match)
+        {
+            Console.WriteLine($"Inicio odds jogo {match.MatchName} {DateTime.UtcNow}");
             string minute = "";
 
             try
             {
-                IWebElement minuteElement = _driver.FindElement(By.XPath("(//p[contains(@style, 'color: rgb(0, 210, 0)')])[2]"));
-                minute = minuteElement.GetAttribute("innerHTML").Replace("'", "");
-                execution.Minute = minute;
+                // Usando Playwright para localizar o elemento do minuto
+                var minuteElement = await _page.QuerySelectorAsync("(//p[contains(@style, 'color: rgb(0, 210, 0)')])[2]");
+                if (minuteElement != null)
+                {
+                    minute = (await minuteElement.InnerHTMLAsync()).Replace("'", "");
+                    match.Minute = minute;
+                }
             }
             catch
             {
-
+                Console.WriteLine("Erro ao buscar o minuto.");
             }
 
-            GetLadderInfo(_match, execution, minute);
+            await GetLadderInfoAsync(match, minute);
 
-            Console.WriteLine($"Fim odds jogo {_match.MatchName} {DateTime.UtcNow}");
+            Console.WriteLine($"Fim odds jogo {match.MatchName} {DateTime.UtcNow}");
         }
 
         #region Private methods
 
-        private void StartDriver()
+        private async Task SetCookiesAsync(IBrowserContext context)
         {
-            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string decodedAccessToken = Uri.UnescapeDataString(_credentials?.AccessToken ?? "");
 
-            var chromeOptions = new ChromeOptions();
-            var chromeDriverService = ChromeDriverService.CreateDefaultService();
-            chromeDriverService.SuppressInitialDiagnosticInformation = true;
-            chromeDriverService.EnableVerboseLogging = false;
-            chromeDriverService.HideCommandPromptWindow = true;  // Oculta a janela de comando no Windows
-
-            if (environment == "Docker")
+            // Adicionando cookies usando o contexto do navegador, com domínio e path explícitos
+            await context.AddCookiesAsync(new[]
             {
-                chromeOptions.AddArgument("--headless");
-                chromeOptions.AddArgument("--no-sandbox");
-                chromeOptions.AddArgument("--disable-dev-shm-usage");
-                chromeOptions.AddArgument("--disable-gpu");
-                chromeOptions.AddArgument("--disable-software-rasterizer");
-                chromeOptions.AddArgument("--disable-extensions");
-                chromeOptions.AddArgument("--disable-infobars");
-                chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
-                chromeOptions.AddArgument("--window-size=1920,1080");  // Define um tamanho padrão de janela
-            }
-
-            _driver = new ChromeDriver(chromeDriverService, chromeOptions);
-            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(3));
-
-            _driver.Navigate().GoToUrl("https://software.layback.me/");
-
-            SetCookies();
-
-            _driver.Navigate().GoToUrl("https://software.layback.me/");
-
-            Thread.Sleep(10000);
-
-            if (_driver.Url == "https://software.layback.me/login?tokenExpired=true" || _driver.Url == "https://software.layback.me/login")
-            {
-                Console.WriteLine("cai no login");
-                Login();
-            }
-            else
-            {
-                Console.WriteLine("não cai no login");
-            }
+                new Cookie { Name = "layback.accessToken", Value = decodedAccessToken, Domain = "software.layback.me", Path = "/" },
+                new Cookie { Name = "layback.exchange", Value = _credentials?.Exchange ?? "", Domain = "software.layback.me", Path = "/" },
+                new Cookie { Name = "layback.refreshToken", Value = _credentials?.RefreshToken ?? "", Domain = "software.layback.me", Path = "/" },
+                new Cookie { Name = "layback.source", Value = _credentials?.Source ?? "", Domain = "software.layback.me", Path = "/" }
+            });
         }
 
-        private void SetCookies()
+
+        private async Task LoginAsync()
         {
-            string decodedAccessToken = HttpUtility.UrlDecode(_credentials != null ? _credentials.AccessToken : "");
-            Cookie accessToken = new Cookie("layback.accessToken", decodedAccessToken);
-            Cookie exchange = new Cookie("layback.exchange", _credentials != null ? _credentials.Exchange : "");
-            Cookie refreshToken = new Cookie("layback.refreshToken", _credentials != null ? _credentials.RefreshToken : "");
-            Cookie source = new Cookie("layback.source", _credentials != null ? _credentials.Source : "");
+            await _page.GotoAsync(_urlLogin);
+            await AllowCookiesAsync();
 
-            // Adicione os cookies
-            _driver.Manage().Cookies.AddCookie(accessToken);
-            _driver.Manage().Cookies.AddCookie(exchange);
-            _driver.Manage().Cookies.AddCookie(refreshToken);
-            _driver.Manage().Cookies.AddCookie(source);
-        }
+            // Aguardando o elemento estar disponível e inserindo os valores
+            var usernameInput = await _page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible });
+            await usernameInput.FillAsync(_username);
 
-        private void Login()
-        {
-            _driver.Navigate().GoToUrl(_urlLogin);
-            AllowCookies();
-
-            IWebElement usernameInput = _wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("username")));
-            IWebElement passwordInput = _wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("password")));
-
-            if (usernameInput != null)
-                usernameInput.SendKeys(_username);
+            var passwordInput = await _page.WaitForSelectorAsync("#password", new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible });
 
             if (passwordInput != null)
             {
                 string twoFactorCode = TwoFactor.GenerateTwoFactorAuthCode(_secretCodeTwoFactor);
-                passwordInput.SendKeys($"{_password}{twoFactorCode}");
+                await passwordInput.FillAsync($"{_password}{twoFactorCode}");
             }
 
-            IWebElement loginButton = _wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("login")));
-            loginButton.Click();
+            var loginButton = await _page.WaitForSelectorAsync("#login", new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible });
+            await loginButton.ClickAsync();
 
-            Thread.Sleep(3000);
+            await Task.Delay(3000); // Substituindo Thread.Sleep
 
-            SaveCookies();
+            await SaveCookiesAsync();
         }
 
-        private void AllowCookies()
+        private async Task AllowCookiesAsync()
         {
-            IWebElement buttonAllowCookies = _wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("onetrust-accept-btn-handler")));
+            var buttonAllowCookies = await _page.WaitForSelectorAsync("#onetrust-accept-btn-handler", new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible });
 
             if (buttonAllowCookies != null)
-                buttonAllowCookies.Click();
+            {
+                await buttonAllowCookies.ClickAsync();
+            }
         }
 
-        private void SaveCookies()
+        private async Task SaveCookiesAsync()
         {
-            List<Cookie> cookies = _driver.Manage().Cookies.AllCookies.ToList();
+            // Obtém todos os cookies do contexto atual da página
+            var cookies = await _page.Context.CookiesAsync(new[] { "https://software.layback.me" });
+
             string accessToken = "";
             string refreshToken = "";
             string source = "";
             string exchange = "";
 
-            foreach (Cookie cookie in cookies)
+            // Loop através dos cookies e atribui os valores apropriados
+            foreach (var cookie in cookies)
             {
                 if (cookie.Name == "layback.accessToken")
                     accessToken = cookie.Value;
@@ -184,6 +168,7 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                     exchange = cookie.Value;
             }
 
+            // Cria o objeto com os valores dos cookies e salva no MongoDB
             BetfairCookie betfairCookie = new BetfairCookie(accessToken, refreshToken, source, exchange);
             _mongoDb.SaveBetfairCredentials(betfairCookie);
         }
@@ -193,16 +178,16 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
             return $"{_baseUrlMarket}eventId={eventId}&marketId={marketId}";
         }
 
-        private void GetLadderInfo(BetfairScrapperMatch match, BetfairScrapperExecution execution, string minute)
+        private async Task GetLadderInfoAsync(BetfairScrapperMatch match, string minute)
         {
             try
             {
                 string homeTeamName = match.MatchName.Split(" v ")[0];
                 string awayTeamName = match.MatchName.Split(" v ")[1];
 
-                // Capturar separadamente os times e os ladders
-                List<IWebElement> teams = _driver.FindElements(By.CssSelector("span.ml-1.block.truncate.text-xs")).ToList();
-                List<IWebElement> ladders = _driver.FindElements(By.CssSelector("div.mb-1.flex.w-full.flex-col")).ToList();
+                // Capturar separadamente os times e os ladders com Playwright
+                var teams = await _page.QuerySelectorAllAsync("span.ml-1.block.truncate.text-xs");
+                var ladders = await _page.QuerySelectorAllAsync("div.mb-1.flex.w-full.flex-col");
 
                 if (teams.Count == 0 || ladders.Count == 0)
                 {
@@ -210,45 +195,42 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                     return;
                 }
 
-                Parallel.For(0, Math.Min(teams.Count, ladders.Count), new ParallelOptions { MaxDegreeOfParallelism = 8 }, i =>
+                // Usando paralelismo para processar odds
+                await Task.WhenAll(teams.Zip(ladders, async (team, ladder) =>
                 {
-                    IWebElement team = teams[i];
-                    IWebElement ladder = ladders[i];
-
                     BetfairScrapperTeamOdd teamOdd = new BetfairScrapperTeamOdd(minute);
-                    teamOdd.Odds = GetOddsFromLadderWithJs(ladder);
+                    teamOdd.Odds = await GetOddsFromLadderWithJsAsync(ladder);
 
-                    string teamName = team.GetAttribute("innerHTML");
+                    string teamName = await team.InnerHTMLAsync();
 
                     if (teamName.Trim() == homeTeamName.Trim())
-                        execution.HomeOdds = teamOdd;
+                        match.HomeOdds = teamOdd;
                     else if (teamName.Trim() == awayTeamName.Trim())
-                        execution.AwayOdds = teamOdd;
+                        match.AwayOdds = teamOdd;
                     else
-                        execution.DrawOdds = teamOdd;
-                });
+                        match.DrawOdds = teamOdd;
+                }));
             }
             catch
             {
-                Console.WriteLine("Erro para buscar as odds");
+                Console.WriteLine("Erro para buscar as odds.");
             }
         }
 
-        private List<BetfairScrapperOdd> GetOddsFromLadderWithJs(IWebElement ladder)
+        private async Task<List<BetfairScrapperOdd>> GetOddsFromLadderWithJsAsync(IElementHandle ladder)
         {
             try
             {
                 List<BetfairScrapperOdd> betfairOdds = new List<BetfairScrapperOdd>();
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
 
-                var oddsData = (ReadOnlyCollection<object>)js.ExecuteScript(@"
-                    var secondDivChild = arguments[0].querySelector('div:nth-child(2)');
+                var oddsData = await _page.EvaluateAsync<JsonElement>(@"(ladder) => {
+                    var secondDivChild = ladder.querySelector('div:nth-child(2)');
                     if (!secondDivChild) return [];
 
                     // Captura apenas as divs filhas diretas e limita a quantidade de elementos buscados
                     var oddsElements = secondDivChild.children;
                     var result = [];
-            
+
                     for (var i = 0; i < oddsElements.length; i++) {
                         var element = oddsElements[i];
 
@@ -270,16 +252,14 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                     }
 
                     return result;
-                ", ladder);
-
+                }", ladder);
 
                 // Iterar sobre a coleção retornada
-                foreach (var data in oddsData)
+                foreach (var element in oddsData.EnumerateArray())
                 {
-                    var dict = (IDictionary<string, object>)data;
-                    string odd = dict["odd"]?.ToString();
-                    string oddClass = dict["oddClass"]?.ToString();
-                    var buttons = (ReadOnlyCollection<object>)dict["buttons"];
+                    string odd = element.GetProperty("odd").GetString();
+                    string oddClass = element.GetProperty("oddClass").GetString();
+                    var buttons = element.GetProperty("buttons").EnumerateArray().Select(b => b.GetString()).ToList();
 
                     if (string.IsNullOrEmpty(odd)) continue;
 

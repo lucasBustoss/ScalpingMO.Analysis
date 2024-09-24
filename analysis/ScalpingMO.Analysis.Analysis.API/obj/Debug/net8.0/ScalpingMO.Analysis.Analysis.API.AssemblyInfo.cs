@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ScalpingMO.Analysis.Analysis.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+23322c7e62ebbe4937a8f49910cd011a51431ef5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e60ee940f6eadc6ea567a74743819d52977de0f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("ScalpingMO.Analysis.Analysis.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ScalpingMO.Analysis.Analysis.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -145,18 +145,10 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
 
         public void SaveBetfairScrapperMatch(BetfairScrapperMatch match)
         {
-            BetfairScrapperMatch existentMatch = _betfairScrapperOddCollection.Find(b => b.EventId == match.EventId).FirstOrDefault();
+            BetfairScrapperMatch existentMatch = _betfairScrapperOddCollection.Find(b => b.EventId == match.EventId && b.DateTime == match.DateTime).FirstOrDefault();
 
             if (existentMatch == null)
                 _betfairScrapperOddCollection.InsertOne(match);
-        }
-
-        public void SaveBetfairScrapperExecutionInMatch(int eventId, BetfairScrapperExecution execution)
-        {
-            var filter = Builders<BetfairScrapperMatch>.Filter.Eq(m => m.EventId, eventId);
-            var update = Builders<BetfairScrapperMatch>.Update.Push(m => m.Executions, execution);
-            
-            _betfairScrapperOddCollection.UpdateOne(filter, update);
         }
 
         #endregion

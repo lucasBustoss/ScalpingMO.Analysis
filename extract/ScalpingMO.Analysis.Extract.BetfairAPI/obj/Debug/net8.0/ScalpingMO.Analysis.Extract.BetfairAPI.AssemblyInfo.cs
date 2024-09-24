@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ScalpingMO.Analysis.Extract.BetfairAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f57dc109052f4939a9810b1c0959b000a7ba8427")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e60ee940f6eadc6ea567a74743819d52977de0f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("ScalpingMO.Analysis.Extract.BetfairAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ScalpingMO.Analysis.Extract.BetfairAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
