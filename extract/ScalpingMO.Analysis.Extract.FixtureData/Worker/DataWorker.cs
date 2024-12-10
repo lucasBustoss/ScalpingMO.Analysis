@@ -229,7 +229,8 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Worker
                             minute = Convert.ToString(minuteTreat + extraTime);
                         }
 
-                        var seconds = await comment.Locator("span.time > span.seconds").TextContentAsync();
+                        var secondsElement = await comment.Locator("span.time > span.seconds").TextContentAsync();
+                        string seconds = secondsElement.Replace("'", "");
                         var description = await comment.Locator("span.comment_data").TextContentAsync();
 
                         var time = !string.IsNullOrEmpty(minute) && !string.IsNullOrEmpty(seconds) ? $"{minute}:{seconds}" : "-";

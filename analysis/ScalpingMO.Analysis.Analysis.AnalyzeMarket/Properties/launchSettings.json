@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ScalpingMO.Analysis.Analysis.AnalyzeMarket": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

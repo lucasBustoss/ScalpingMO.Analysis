@@ -20,8 +20,8 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Models.BetfairAPI.Scrapper
         public string MarketId { get; set; }
         public DateTime DateTime { get; set; }
         public string Minute { get; set; }
-        public BetfairScrapperTeamOdd HomeOdds { get; set; }
-        public BetfairScrapperTeamOdd DrawOdds { get; set; }
-        public BetfairScrapperTeamOdd AwayOdds { get; set; }
+        public List<BetfairScrapperOdd> HomeOdds { get; set; }
+        public List<BetfairScrapperOdd> DrawOdds { get; set; }
+        public List<BetfairScrapperOdd> AwayOdds { get; set; }
     }
 }

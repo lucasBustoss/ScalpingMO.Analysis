@@ -38,6 +38,8 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
             _referenceOddCollection = extractDatabase.GetCollection<ReferenceOddInfo>("footballapi_info");
             _betfairOddCollection = extractDatabase.GetCollection<BetfairOddInfo>("betfair_info");
             _betfairScrapperOddCollection = extractDatabase.GetCollection<BetfairScrapperMatch>("betfair_scrapper_info");
+
+            CreateIndexes();
         }
 
         public List<Fixture> GetFixturesToExtractData()
@@ -163,6 +165,28 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data
             ApiBaseResponse<OddsResponse> oddsObject = JsonSerializer.Deserialize<ApiBaseResponse<OddsResponse>>(oddsRaw);
 
             return oddsObject.Response.ToList();
+        }
+
+        #endregion
+
+        #region Indexes
+
+        private void CreateIndexes()
+        {
+            var indexBetfairMatchDateTime = Builders<BetfairScrapperMatch>.IndexKeys.Ascending(f => f.DateTime);
+            var indexBetfairMatchEventIdDateTime = Builders<BetfairScrapperMatch>.IndexKeys
+                .Ascending(f => f.EventId)
+                .Ascending(f => f.DateTime);
+
+            // Cria os modelos de índice com nomes explícitos
+            var indexModels = new List<CreateIndexModel<BetfairScrapperMatch>>
+            {
+                new CreateIndexModel<BetfairScrapperMatch>(indexBetfairMatchDateTime, new CreateIndexOptions { Name = "DateTimeIndex" }),
+                new CreateIndexModel<BetfairScrapperMatch>(indexBetfairMatchEventIdDateTime, new CreateIndexOptions { Name = "EventId_DateTimeIndex" })
+            };
+
+            // Cria todos os índices em uma única operação
+            _betfairScrapperOddCollection.Indexes.CreateMany(indexModels);
         }
 
         #endregion

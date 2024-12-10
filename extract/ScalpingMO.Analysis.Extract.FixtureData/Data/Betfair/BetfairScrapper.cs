@@ -198,17 +198,16 @@ namespace ScalpingMO.Analysis.Extract.FixtureData.Data.Betfair
                 // Usando paralelismo para processar odds
                 await Task.WhenAll(teams.Zip(ladders, async (team, ladder) =>
                 {
-                    BetfairScrapperTeamOdd teamOdd = new BetfairScrapperTeamOdd(minute);
-                    teamOdd.Odds = await GetOddsFromLadderWithJsAsync(ladder);
+                    List<BetfairScrapperOdd> odds = await GetOddsFromLadderWithJsAsync(ladder);
 
                     string teamName = await team.InnerHTMLAsync();
 
                     if (teamName.Trim() == homeTeamName.Trim())
-                        match.HomeOdds = teamOdd;
+                        match.HomeOdds = odds;
                     else if (teamName.Trim() == awayTeamName.Trim())
-                        match.AwayOdds = teamOdd;
+                        match.AwayOdds = odds;
                     else
-                        match.DrawOdds = teamOdd;
+                        match.DrawOdds = odds;
                 }));
             }
             catch

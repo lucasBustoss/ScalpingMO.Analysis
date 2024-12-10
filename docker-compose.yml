@@ -57,6 +57,16 @@ services:
     networks:
       - scalpingmo-network
 
+  scalpingmo_analysis_analyzemarket:
+    build:
+      context: .
+      dockerfile: analysis/ScalpingMO.Analysis.Analysis.AnalyzeMarket/Dockerfile
+    image: scalpingmo.extract.analyzemarket:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    networks:
+      - scalpingmo-network
+
   scalpingmo_db:
     image: mongo:latest
     container_name: scalpingmo_db

@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalpingMO.Analysis.Analysis.AnalyzeMarket", "analysis\ScalpingMO.Analysis.Analysis.AnalyzeMarket\ScalpingMO.Analysis.Analysis.AnalyzeMarket.csproj", "{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,10 @@ Global
 		{BAB6AE73-F258-49B2-8535-924DC65BD260}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAB6AE73-F258-49B2-8535-924DC65BD260}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAB6AE73-F258-49B2-8535-924DC65BD260}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,6 +71,7 @@ Global
 		{10A145E9-2582-4ED2-825D-AC49D8BAFC9A} = {FE29C98F-FEED-424B-B227-DD40E39006CC}
 		{21BBB5EF-A5E3-4387-A02E-F8189DD43D8F} = {E9DDCAEF-DBB9-49F5-98BE-E4A73A284E0F}
 		{BAB6AE73-F258-49B2-8535-924DC65BD260} = {FE29C98F-FEED-424B-B227-DD40E39006CC}
+		{6D67F317-234A-4D03-8AEE-AA9BCFAB45E1} = {E9DDCAEF-DBB9-49F5-98BE-E4A73A284E0F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {16EE7CD6-A0D1-4968-B388-7E0B732DD63A}

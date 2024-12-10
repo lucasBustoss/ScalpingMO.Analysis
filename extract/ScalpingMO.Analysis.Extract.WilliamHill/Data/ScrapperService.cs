@@ -116,7 +116,6 @@ namespace ScalpingMO.Analysis.Extract.WilliamHill.Data
 
             while (true)
             {
-                //List<IWebElement> currentLinks = _driver.FindElements(By.XPath()).ToList();
                 List<IWebElement> currentLinks = _driver.FindElements(By.XPath(xpath)).ToList();
                 links.AddRange(currentLinks.Except(links)); 
 
